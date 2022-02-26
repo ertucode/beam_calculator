@@ -15,6 +15,7 @@ pygame.display.set_caption("Beam Calculator")
 myforce = Force(7,100,120)
 mysupport = Support(5,"pinned")
 mysupport2 = Support(12,"roller")
+mysupport3 = Support(12,"roller")
 objects = [myforce,mysupport,mysupport2]
 
 def draw(win,objects):
