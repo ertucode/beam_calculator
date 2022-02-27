@@ -16,8 +16,8 @@ pygame.display.set_caption("Beam Calculator")
 myforce = Force(7,100,120)
 mysupport = Support(5,"pinned")
 mysupport2 = Support(12,"roller")
-myload = Distload(2,5,12,"up")
-objects = [myforce,mysupport,mysupport2,myload]
+myload = Distload(2,10,10,20,"up")
+objects = [myload]
 
 def draw(win,objects):
     win.fill(WHITE)
