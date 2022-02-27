@@ -2,6 +2,7 @@ import pygame
 import math
 from force import Force
 from support import Support
+from distributed_load import Distload
 import myfuncs
 from vars import beam_left, beam_right, beam_mid, beam_length, beam_height, beam_below,beam_y,WIDTH,HEIGHT,BLACK,WHITE
 
@@ -15,8 +16,8 @@ pygame.display.set_caption("Beam Calculator")
 myforce = Force(7,100,120)
 mysupport = Support(5,"pinned")
 mysupport2 = Support(12,"roller")
-mysupport3 = Support(12,"roller")
-objects = [myforce,mysupport,mysupport2]
+myload = Distload(2,5,12,"up")
+objects = [myforce,mysupport,mysupport2,myload]
 
 def draw(win,objects):
     win.fill(WHITE)
