@@ -3,7 +3,7 @@ import math
 import myfuncs
 from vars import beam_left, beam_right, beam_mid, beam_length,\
 beam_height, beam_below,beam_y,WIDTH,HEIGHT,BLACK,tırtık_height,\
-tırtık_count,sup_height
+tırtık_count,sup_height, fixed_width, fixed_height
 
 
 def draw_pinned_sup(win,COLOR,x,y,width,height,th,type="pinned"):
@@ -19,6 +19,15 @@ def draw_roller_sup(win,COLOR,x,y,width,height,th):
     draw_circles(win,COLOR,x-width/2,y+height_pinned,width,radius,2)
     draw_tırtık(win,COLOR,"down",x-width/2,y+height_pinned+1.9*radius,width,tırtık_height,tırtık_count,2)
 
+def draw_fixed_sup(win,COLOR,x,y,side,width,height,th):
+    pygame.draw.rect(win,COLOR,(x,y,width,height),th)
+    trw = width/3
+    if side == "left":
+        draw_tırtık(win,COLOR,"left",x-trw,y,trw,height,15,2)
+    elif side == "right":
+        draw_tırtık(win,COLOR,"left",x+width,y,trw,height,15,2)
+    
+
 
 def draw_circles(win,COLOR,x,y,width,radius,th):
     count = math.floor(width / radius /2)
@@ -28,8 +37,8 @@ def draw_circles(win,COLOR,x,y,width,radius,th):
         pygame.draw.circle(win,COLOR,(center1x+i*2.15*radius,center1y),radius,th)
 
 def draw_tırtık(win,COLOR,side,x,y,width,height,count,th):
-    inc = width / count
     if side=="down":
+        inc = width / count
         firstx1 = x - inc
         firsty1 = y + height
         firstx2 = x
@@ -39,14 +48,40 @@ def draw_tırtık(win,COLOR,side,x,y,width,height,count,th):
             offset = i*inc
             pygame.draw.line(win,COLOR,(firstx1+offset,firsty1),(firstx2+offset,firsty2),th)
 
+    if side == "left" or side=="right":
+        inc = height / count
+        firstx1 = x
+        firsty1 = y - inc
+        firstx2 = x + width
+        firsty2 = y        
+        for i in range(1,count+1):
+            offset = i*inc
+            pygame.draw.line(win,COLOR,(firstx1,firsty1+offset),(firstx2,firsty2+offset),th)
+
 class Support:
-    def __init__(self,x,type):
+    def __init__(self,type,x=0,side = None):
         self.x = x
         self.mappedx = myfuncs.map_value(x,0,beam_length,beam_left,beam_right)
         self.type = type
+        self.side = side
+        self.set_fixed()
+
+
+    def set_fixed(self):
+        if self.side == "left":
+            self.x = 0
+            self.mappedx = beam_left
+        elif self.side == "right":
+            self.x = beam_length
+            self.mappedx = beam_right
 
     def draw(self,win):
         if self.type=="pinned":
-            draw_pinned_sup(win,BLACK,self.mappedx,beam_below,(beam_right-beam_left)/10,sup_height,2)
+            draw_pinned_sup(win,BLACK,self.mappedx,beam_below,sup_height,sup_height,2)
         elif self.type=="roller":
-            draw_roller_sup(win,BLACK,self.mappedx,beam_below,(beam_right-beam_left)/10,sup_height,2)
+            draw_roller_sup(win,BLACK,self.mappedx,beam_below,sup_height,sup_height,2)
+        elif self.type == "fixed":
+            if self.side == "left":
+                draw_fixed_sup(win,BLACK,self.mappedx-fixed_width,beam_y - fixed_height/2,self.side,fixed_width,fixed_height,2)
+            elif self.side == "right":
+                draw_fixed_sup(win,BLACK,self.mappedx,beam_y - fixed_height/2,self.side,fixed_width,fixed_height,2)
