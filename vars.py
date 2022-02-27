@@ -14,3 +14,4 @@ beam_y = WIDTH / 2
 tırtık_height = 5
 tırtık_count = 6
 forcelen = 75
+momentw = 30

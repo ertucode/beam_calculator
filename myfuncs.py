@@ -18,5 +18,13 @@ def draw_arrow(win,COLOR,startpos,endpos,th):
     end1 = (endpos[0]+math.cos(tip1_ang)*arrow_len,endpos[1]+math.sin(tip1_ang)*arrow_len)
     tip2_ang = angle + 5*math.pi/6
     end2 = (endpos[0]+math.cos(tip2_ang)*arrow_len,endpos[1]+math.sin(tip2_ang)*arrow_len)
-    pygame.draw.line(win,COLOR,endpos,end1,2)
-    pygame.draw.line(win,COLOR,endpos,end2,2)
+    pygame.draw.line(win,COLOR,endpos,end1,th)
+    pygame.draw.line(win,COLOR,endpos,end2,th)
+
+def draw_arrow_tip(win,COLOR,x,y,angle,size):
+    tip1_ang = angle + 2*math.pi/6
+    end1 = (x+math.cos(tip1_ang)*size,y+math.sin(tip1_ang)*size)
+    tip2_ang = angle + 4*math.pi/6
+    end2 = (x+math.cos(tip2_ang)*size,y+math.sin(tip2_ang)*size)
+    pygame.draw.line(win,COLOR,(x,y),end1,2)
+    pygame.draw.line(win,COLOR,(x,y),end2,2)
