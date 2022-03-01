@@ -36,3 +36,9 @@ class Distload:
     
     def __eq__(self,other):
         return self.startx==other.startx and self.endx==other.endx and self.startmag==other.startmag and self.endmag==other.endmag and self.dir==other.dir
+    
+    def __str__(self):
+        return "DistributedLoad, (Start/End): ("+str(self.startx)+","+str(self.endx)+"), Magnitudes: (" +str(self.startmag)+","+str(self.endmag) + "), Direction: " + self.dir
+
+    def __repr__(self):
+        return self.__str__()

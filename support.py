@@ -59,7 +59,7 @@ def draw_tırtık(win,COLOR,side,x,y,width,height,count,th):
             pygame.draw.line(win,COLOR,(firstx1,firsty1+offset),(firstx2,firsty2+offset),th)
 
 class Support:
-    def __init__(self,type,x=0,side = None):
+    def __init__(self,type,x=0,side =""):
         self.x = x
         self.mappedx = myfuncs.map_value(x,0,beam_length,beam_left,beam_right)
         self.type = type
@@ -85,5 +85,16 @@ class Support:
                 draw_fixed_sup(win,BLACK,self.mappedx-fixed_width,beam_y - fixed_height/2,self.side,fixed_width,fixed_height,2)
             elif self.side == "right":
                 draw_fixed_sup(win,BLACK,self.mappedx,beam_y - fixed_height/2,self.side,fixed_width,fixed_height,2)
+    
     def __eq__(self,other):
         return self.type==other.type and self.x==other.x and self.side==other.side
+
+    def __str__(self):
+        if self.type == "fixed":
+            return "Support type:"+self.type+", Side:"+str(self.side)
+        else:
+            return "Support type:"+self.type+", Location:"+str(self.x)
+
+
+    def __repr__(self):
+        return self.__str__()

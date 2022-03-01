@@ -33,3 +33,10 @@ class Moment:
     def __eq__(self,other):
         return self.x == other.x and self.mag==other.mag
         
+    def __str__(self):
+        return "Moment, Location:"+str(self.x)+", Magnitude:"+str(self.mag)
+    
+    def __repr__(self):
+        return self.__str__()
+
+    

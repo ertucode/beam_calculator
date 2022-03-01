@@ -20,13 +20,29 @@ momentw = 30
 fixed_width = 10
 fixed_height = 100
 
-ButtonKeys = {"FixedSupportKey":K_1,"PinnedSupportKey" : K_2,"RollerSupportKey" : K_3,"ForceKey" : K_4,"DistributedLoadKey" : K_5,"MomentKey" : K_6,"ShowItemsKey" : K_7}
+ButtonKeys = {"FixedSupportKey":K_1
+            ,"PinnedSupportKey" : K_2
+            ,"RollerSupportKey" : K_3
+            ,"ForceKey" : K_4
+            ,"DistributedLoadKey" : K_5
+            ,"MomentKey" : K_6
+            ,"ShowItemsKey" : K_7}
 
-ButtonQuestions = {"FixedSupportQuestions":("Location[left/right]: ")
-                , "PinnedSupportQuestions":("Location[m]: ")
-                , "RollerSupportQuestions":("Location[m]: ")
-                , "ForceQuestions:":("Location[m]: ","Magnitude[N]:","Angle[deg]:")
-                , "DistributedLoadQuestions":("Direction[up/down]","Starting Location[m]: ","Starting Magnitude[N/m]: ","Ending Location[m]: ","Ending Magnitude[N⋅m]: ")
+ButtonQuestions = {"FixedSupportQuestions":("Location[left/right]: ",)
+                , "PinnedSupportQuestions":("Location[m]: ",)
+                , "RollerSupportQuestions":("Location[m]: ",)
+                , "ForceQuestions":("Location[m]: ","Magnitude[N]:","Angle[deg]:")
+                , "DistributedLoadQuestions":("Direction[up/down]:","Starting Location[m]: ","Starting Magnitude[N/m]: ","Ending Location[m]: ","Ending Magnitude[N⋅m]: ")
                 , "MomentQuestions":("Location[m]: ","Magnitude[N⋅m][""+"" for CCW ""-""CW]: ")}
+
+ButtonTexts = {"FixedSupportText":"1-Fixed Support"
+            ,"PinnedSupportText":"2-Pinned Support"
+            ,"RollerSupportText":"3-Roller Support"
+            ,"ForceText":"4-Force"
+            ,"DistributedLoadText":"5-Distributed Load"
+            ,"MomentText":"6-Moment"
+            ,"ShowText":"7-Show Items"}
+
+ButtonFont = "ComicSans"
 
 

@@ -28,3 +28,13 @@ def draw_arrow_tip(win,COLOR,x,y,angle,size):
     end2 = (x+math.cos(tip2_ang)*size,y+math.sin(tip2_ang)*size)
     pygame.draw.line(win,COLOR,(x,y),end1,2)
     pygame.draw.line(win,COLOR,(x,y),end2,2)
+
+def DrawButton(win,BUTTONCOLOR,x,y,width,height,th,text,TEXTCOLOR,FontType,FontSize):
+    x = x - width / 2
+    y = y - height / 2
+    ButtonRect = pygame.Rect(x,y,width,height)
+    pygame.draw.rect(win,BUTTONCOLOR,ButtonRect,th)
+    myfont = pygame.font.SysFont(FontType, FontSize)
+    TextRender = myfont.render(text,True,TEXTCOLOR)
+    TextRect = TextRender.get_rect(center=(x+width/2,y+height/2))
+    win.blit(TextRender,TextRect)

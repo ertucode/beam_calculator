@@ -22,3 +22,9 @@ class Force:
         startpos = (self.mappedx,beam_y)
         endpos = (startpos[0]+forcelen*math.cos(self.angle),startpos[1]-forcelen*math.sin(self.angle))
         myfuncs.draw_arrow(win,BLACK,startpos,endpos,2)
+
+    def __str__(self):
+        return "Force, Location: " + str(self.x) + ", Magnitude: " + str(self.mag) + ", Angle: " + str(self.angle)
+
+    def __repr__(self):
+        return self.__str__()
