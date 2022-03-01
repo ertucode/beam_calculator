@@ -85,3 +85,5 @@ class Support:
                 draw_fixed_sup(win,BLACK,self.mappedx-fixed_width,beam_y - fixed_height/2,self.side,fixed_width,fixed_height,2)
             elif self.side == "right":
                 draw_fixed_sup(win,BLACK,self.mappedx,beam_y - fixed_height/2,self.side,fixed_width,fixed_height,2)
+    def __eq__(self,other):
+        return self.type==other.type and self.x==other.x and self.side==other.side

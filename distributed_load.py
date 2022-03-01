@@ -33,3 +33,6 @@ class Distload:
     def draw(self,win):
         maxmag = max(self.startmag,self.endmag)
         draw_dist_load(win,BLACK,self.mappedstartx,beam_mid,self.width,beam_height*2,self.dir,self.startmag,self.endmag,maxmag)
+    
+    def __eq__(self,other):
+        return self.startx==other.startx and self.endx==other.endx and self.startmag==other.startmag and self.endmag==other.endmag and self.dir==other.dir

@@ -1,3 +1,5 @@
+from pygame import *
+
 WIDTH, HEIGHT = 1000, 700
 WHITE = (255, 255, 255)
 BLACK = (0,0,0)
@@ -17,3 +19,14 @@ forcelen = 75
 momentw = 30
 fixed_width = 10
 fixed_height = 100
+
+ButtonKeys = {"FixedSupportKey":K_1,"PinnedSupportKey" : K_2,"RollerSupportKey" : K_3,"ForceKey" : K_4,"DistributedLoadKey" : K_5,"MomentKey" : K_6,"ShowItemsKey" : K_7}
+
+ButtonQuestions = {"FixedSupportQuestions":("Location[left/right]: ")
+                , "PinnedSupportQuestions":("Location[m]: ")
+                , "RollerSupportQuestions":("Location[m]: ")
+                , "ForceQuestions:":("Location[m]: ","Magnitude[N]:","Angle[deg]:")
+                , "DistributedLoadQuestions":("Direction[up/down]","Starting Location[m]: ","Starting Magnitude[N/m]: ","Ending Location[m]: ","Ending Magnitude[N⋅m]: ")
+                , "MomentQuestions":("Location[m]: ","Magnitude[N⋅m][""+"" for CCW ""-""CW]: ")}
+
+
