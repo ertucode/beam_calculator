@@ -1,11 +1,12 @@
 import myfuncs
 import pygame
+from math import ceil
 from vars import beam_left, beam_right, beam_mid, beam_length, \
-    beam_height, beam_below,beam_y,WIDTH,HEIGHT,BLACK,forcelen
+    beam_height, beam_below,beam_y,WIDTH,HEIGHT,BLACK,forcelen,distload_h
 
 def draw_dist_load(win,COLOR,x,y,width,height,dir,startmag,endmag,maxmag):
     space = 15
-    count = round(width/space)
+    count = ceil(width/space)
     space = width/count
     hstart = myfuncs.map_value(startmag,0,maxmag,0,height)
     hend = myfuncs.map_value(endmag,0,maxmag,0,height)
@@ -30,16 +31,32 @@ class Distload:
         self.endmag = endmag
         self.dir = dir
         self.type = "distload"
+        self.CalcEquivalent()
 
     def draw(self,win):
         maxmag = max(self.startmag,self.endmag)
-        draw_dist_load(win,BLACK,self.mappedstartx,beam_mid,self.width,beam_height*2,self.dir,self.startmag,self.endmag,maxmag)
+        draw_dist_load(win,BLACK,self.mappedstartx,beam_y,self.width,distload_h,self.dir,self.startmag,self.endmag,maxmag)
     
+    def CalcEquivalent(self):
+        width = self.endx-self.startx
+        if self.startmag >= self.endmag:
+            MaxLoad = self.startmag
+            MinLoad = self.endmag
+            TriLoc = self.startx + width / 3
+        else:
+            MaxLoad = self.endmag
+            MinLoad = self.startmag
+            TriLoc = self.endx - width / 3       
+        RectForce = MinLoad * width
+        TriForce = (MaxLoad - MinLoad) * width / 2
+        self.EqForce = RectForce + TriForce
+        self.EqLoc = (RectForce*width/2+TriForce*TriLoc)/self.EqForce
+
     def __eq__(self,other):
         return self.startx==other.startx and self.endx==other.endx and self.startmag==other.startmag and self.endmag==other.endmag and self.dir==other.dir
     
     def __str__(self):
-        return "DistributedLoad, (Start/End): ("+str(self.startx)+","+str(self.endx)+"), Magnitudes: (" +str(self.startmag)+","+str(self.endmag) + "), Direction: " + self.dir
+        return f"DistributedLoad, Start/End: {self.startx}/{self.endx}, Magnitudes: {self.startmag},{self.endmag}, Direction: {self.dir}"
 
     def __repr__(self):
         return self.__str__()

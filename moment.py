@@ -29,7 +29,7 @@ class Moment:
             self.dir = "CW"
 
     def draw(self,win):
-        draw_moment(win,BLACK,self.mappedx,beam_mid - 6* beam_height,momentw,self.dir,2)
+        draw_moment(win,BLACK,self.mappedx,beam_y - 6* beam_height,momentw,self.dir,2)
 
     def __eq__(self,other):
         return self.x == other.x and self.mag==other.mag

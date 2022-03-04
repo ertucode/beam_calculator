@@ -1,5 +1,7 @@
 import pygame
 import math
+import copy
+import numpy as np
 
 def map_value(val,min1,max1,min2,max2):
     return (val-min1)*(max2-min2)/(max1-min1)+min2
@@ -38,3 +40,23 @@ def DrawButton(win,BUTTONCOLOR,x,y,width,height,th,text,TEXTCOLOR,FontType,FontS
     TextRender = myfont.render(text,True,TEXTCOLOR)
     TextRect = TextRender.get_rect(center=(x+width/2,y+height/2))
     win.blit(TextRender,TextRect)
+
+def PrintMatrix(matrix):
+    print('\n'.join(['\t'.join([str(cell) for cell in row]) for row in matrix]))
+
+def Others(lst,item):
+    list2 = lst
+    list2.remove(item)
+    return list2
+
+def RemoveLastN(lst,n):
+    lst = lst[:-n or None]
+    return lst
+
+def CopyDict(dict):
+    dict2 = copy.deepcopy(dict)
+    return dict2
+
+def symmetrize_y_axis(axes):
+    y_max = np.abs(axes.get_ylim()).max()
+    axes.set_ylim(ymin=-y_max, ymax=y_max)

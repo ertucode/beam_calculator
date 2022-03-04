@@ -65,6 +65,7 @@ class Support:
         self.type = type
         self.side = side
         self.set_fixed()
+        self.ReactionForce = "Not Calculated"
 
 
     def set_fixed(self):
@@ -74,6 +75,7 @@ class Support:
         elif self.side == "right":
             self.x = beam_length
             self.mappedx = beam_right
+        self.ReactionMoment = "Not Calculated"
 
     def draw(self,win):
         if self.type=="pinned":
@@ -84,16 +86,16 @@ class Support:
             if self.side == "left":
                 draw_fixed_sup(win,BLACK,self.mappedx-fixed_width,beam_y - fixed_height/2,self.side,fixed_width,fixed_height,2)
             elif self.side == "right":
-                draw_fixed_sup(win,BLACK,self.mappedx,beam_y - fixed_height/2,self.side,fixed_width,fixed_height,2)
+                draw_fixed_sup(win,BLACK,self.mappedx            ,beam_y - fixed_height/2,self.side,fixed_width,fixed_height,2)
     
     def __eq__(self,other):
         return self.type==other.type and self.x==other.x and self.side==other.side
 
     def __str__(self):
         if self.type == "fixed":
-            return "Support type:"+self.type+", Side:"+str(self.side)
+            return f"|Support Type: {self.type}, Side: {self.side}, Reaction Force: {self.ReactionForce}, Reaction Moment: {self.ReactionMoment}|"
         else:
-            return "Support type:"+self.type+", Location:"+str(self.x)
+            return f"|Support Type: {self.type}, Location: {self.x}, Reaction Force: {self.ReactionForce}|"
 
 
     def __repr__(self):

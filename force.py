@@ -13,8 +13,6 @@ class Force:
         self.calc_fx_fy()
         self.type = "force"
 
-
-
     def calc_fx_fy(self):
         self.fx = self.mag*math.cos(self.angle)
         self.fy = self.mag*math.sin(self.angle)

@@ -8,7 +8,7 @@ BLACK = (0,0,0)
 beam_left = 400
 beam_right = WIDTH-100
 beam_mid = (beam_right+beam_left)/2
-beam_length = 15
+beam_length = 11
 beam_height = 15
 sup_height = 35
 beam_y = HEIGHT / 2
@@ -19,6 +19,7 @@ forcelen = 75
 momentw = 30
 fixed_width = 10
 fixed_height = 100
+distload_h = 50
 
 ButtonKeys = {"FixedSupportKey":K_1
             ,"PinnedSupportKey" : K_2
