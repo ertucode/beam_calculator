@@ -57,6 +57,3 @@ def CopyDict(dict):
     dict2 = copy.deepcopy(dict)
     return dict2
 
-def symmetrize_y_axis(axes):
-    y_max = np.abs(axes.get_ylim()).max()
-    axes.set_ylim(ymin=-y_max, ymax=y_max)
