@@ -20,6 +20,7 @@ class Moment:
         self.mappedx = myfuncs.map_value(x,0,beam_length,beam_left,beam_right)
         self.mag = mag
         self.set_dir()
+        self.type = "moment"
         
     def set_dir(self):
         if self.mag>0:

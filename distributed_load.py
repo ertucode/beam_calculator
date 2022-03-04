@@ -29,6 +29,7 @@ class Distload:
         self.startmag = startmag
         self.endmag = endmag
         self.dir = dir
+        self.type = "distload"
 
     def draw(self,win):
         maxmag = max(self.startmag,self.endmag)

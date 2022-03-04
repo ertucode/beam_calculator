@@ -11,6 +11,7 @@ class Force:
         self.mag = mag
         self.angle = math.radians(angle)
         self.calc_fx_fy()
+        self.type = "force"
 
 
 

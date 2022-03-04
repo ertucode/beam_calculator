@@ -1,18 +1,18 @@
 from pygame import *
 
-WIDTH, HEIGHT = 1000, 700
+WIDTH, HEIGHT = 1000, 400
 WHITE = (255, 255, 255)
 BLACK = (0,0,0)
 
 
-beam_left = 250
-beam_right = WIDTH-beam_left
+beam_left = 400
+beam_right = WIDTH-100
 beam_mid = (beam_right+beam_left)/2
 beam_length = 15
 beam_height = 15
 sup_height = 35
-beam_below = beam_mid + beam_height / 2
-beam_y = WIDTH / 2
+beam_y = HEIGHT / 2
+beam_below = beam_y + beam_height / 2
 tırtık_height = 5
 tırtık_count = 6
 forcelen = 75
@@ -44,5 +44,15 @@ ButtonTexts = {"FixedSupportText":"1-Fixed Support"
             ,"ShowText":"7-Show Items"}
 
 ButtonFont = "ComicSans"
+ButtonFontSize = 13
+ButtonWidth = 200
+ButtonHeight = 30
+ButtonXMid = 200
+ButtonYStart = 50
+NOfButtons = len(ButtonTexts)
+ButtonYEnd = HEIGHT - ButtonYStart
+ButtonYInc = (((ButtonYEnd - ButtonYStart) - NOfButtons * ButtonHeight) / (NOfButtons-1)) + ButtonHeight
+
+
 
 

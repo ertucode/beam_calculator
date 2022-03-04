@@ -7,7 +7,8 @@ from moment import Moment
 import myfuncs
 from vars import beam_left, beam_right, beam_mid, beam_length, beam_height,\
      beam_below,beam_y,WIDTH,HEIGHT,BLACK,WHITE,ButtonKeys,ButtonQuestions,ButtonTexts,\
-         ButtonFont
+         ButtonFont, ButtonFontSize, ButtonWidth, ButtonXMid, ButtonHeight, ButtonYStart, ButtonYInc
+
 
 
 pygame.init()
@@ -17,13 +18,13 @@ pygame.display.set_caption("Beam Calculator")
 
 
 def DrawButtons(win,ButtonKeys,ButtonQuestions,ButtonTexts):
-    myfuncs.DrawButton(win,BLACK,WIDTH/2,20,200,40,2,ButtonTexts["FixedSupportText"],BLACK,ButtonFont,20)
-    myfuncs.DrawButton(win,BLACK,WIDTH/2,60,200,40,2,ButtonTexts["PinnedSupportText"],BLACK,ButtonFont,20)
-    myfuncs.DrawButton(win,BLACK,WIDTH/2,100,200,40,2,ButtonTexts["RollerSupportText"],BLACK,ButtonFont,20)
-    myfuncs.DrawButton(win,BLACK,WIDTH/2,140,200,40,2,ButtonTexts["ForceText"],BLACK,ButtonFont,20)
-    myfuncs.DrawButton(win,BLACK,WIDTH/2,180,200,40,2,ButtonTexts["DistributedLoadText"],BLACK,ButtonFont,20)
-    myfuncs.DrawButton(win,BLACK,WIDTH/2,220,200,40,2,ButtonTexts["MomentText"],BLACK,ButtonFont,20)
-    myfuncs.DrawButton(win,BLACK,WIDTH/2,260,200,40,2,ButtonTexts["ShowText"],BLACK,ButtonFont,20)
+    myfuncs.DrawButton(win,BLACK,ButtonXMid,ButtonYStart,ButtonWidth,ButtonHeight,2,ButtonTexts["FixedSupportText"],BLACK,ButtonFont,ButtonFontSize)
+    myfuncs.DrawButton(win,BLACK,ButtonXMid,ButtonYStart+1*ButtonYInc,ButtonWidth,ButtonHeight,2,ButtonTexts["PinnedSupportText"],BLACK,ButtonFont,ButtonFontSize)
+    myfuncs.DrawButton(win,BLACK,ButtonXMid,ButtonYStart+2*ButtonYInc,ButtonWidth,ButtonHeight,2,ButtonTexts["RollerSupportText"],BLACK,ButtonFont,ButtonFontSize)
+    myfuncs.DrawButton(win,BLACK,ButtonXMid,ButtonYStart+3*ButtonYInc,ButtonWidth,ButtonHeight,2,ButtonTexts["ForceText"],BLACK,ButtonFont,ButtonFontSize)
+    myfuncs.DrawButton(win,BLACK,ButtonXMid,ButtonYStart+4*ButtonYInc,ButtonWidth,ButtonHeight,2,ButtonTexts["DistributedLoadText"],BLACK,ButtonFont,ButtonFontSize)
+    myfuncs.DrawButton(win,BLACK,ButtonXMid,ButtonYStart+5*ButtonYInc,ButtonWidth,ButtonHeight,2,ButtonTexts["MomentText"],BLACK,ButtonFont,ButtonFontSize)
+    myfuncs.DrawButton(win,BLACK,ButtonXMid,ButtonYStart+6*ButtonYInc,ButtonWidth,ButtonHeight,2,ButtonTexts["ShowText"],BLACK,ButtonFont,ButtonFontSize)
 
 def draw(win,objects):
     win.fill(WHITE)
@@ -52,6 +53,8 @@ forces = []
 distloads = []
 moments = []
 objects = []
+
+#def CalculateSupportReactions(objects):
 
 
 while run:
