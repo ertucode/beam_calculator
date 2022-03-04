@@ -30,8 +30,9 @@ def draw(win,objects):
     win.fill(WHITE)
     myfuncs.draw_at_center(win,(173,216,230),beam_mid,beam_y,beam_right-beam_left,beam_height,0)
 
-    for object in objects:
-        object.draw(win)
+    for subclass in objects:
+        for object in objects[subclass]:
+            object.draw(win)
     
     DrawButtons(win,ButtonKeys,ButtonQuestions,ButtonTexts)
 
@@ -48,11 +49,16 @@ def AskForInputs(questions):
         answers.append(input(question))
     return answers
 
-supports = []
+""" supports = []
 forces = []
 distloads = []
-moments = []
-objects = []
+moments = [] """
+objects = {
+    "supports": [],
+    "forces": [],
+    "distloads": [],
+    "moments": []
+}
 
 #def CalculateSupportReactions(objects):
 
@@ -70,35 +76,28 @@ while run:
             if event.key == ButtonKeys["FixedSupportKey"]:
                 Ans = AskForInputs(ButtonQuestions["FixedSupportQuestions"])
                 NewOb = Support("fixed",side=Ans[0])
-                supports.append(NewOb)
-                objects.append(NewOb)
+                objects["supports"].append(NewOb)
             if event.key == ButtonKeys["PinnedSupportKey"]:
                 Ans = AskForInputs(ButtonQuestions["PinnedSupportQuestions"])
                 NewOb = Support("pinned",float(Ans[0]))
-                supports.append(NewOb)
-                objects.append(NewOb)
+                objects["supports"].append(NewOb)
             if event.key == ButtonKeys["RollerSupportKey"]:
                 Ans = AskForInputs(ButtonQuestions["RollerSupportQuestions"])
                 NewOb = Support("roller",float(Ans[0]))
-                supports.append(NewOb)
-                objects.append(NewOb)
+                objects["supports"].append(NewOb)
             if event.key == ButtonKeys["ForceKey"]:
                 Ans = AskForInputs(ButtonQuestions["ForceQuestions"])
                 NewOb = Force(float(Ans[0]),float(Ans[1]),float(Ans[2]))
-                forces.append(NewOb)
-                objects.append(NewOb)
+                objects["forces"].append(NewOb)
             if event.key == ButtonKeys["DistributedLoadKey"]:
                 Ans = AskForInputs(ButtonQuestions["DistributedLoadQuestions"])
                 NewOb = Distload(float(Ans[1]),float(Ans[3]),float(Ans[2]),float(Ans[4]),str(Ans[0]))
-                distloads.append(NewOb)
-                objects.append(NewOb)           
+                objects["distloads"].append(NewOb)          
             if event.key == ButtonKeys["MomentKey"]:
                 Ans = AskForInputs(ButtonQuestions["MomentQuestions"])
                 NewOb = Moment(float(Ans[0]),float(Ans[1]))
-                moments.append(NewOb)
-                objects.append(NewOb)
+                objects["moments"].append(NewOb)
             if event.key == ButtonKeys["ShowItemsKey"]:
-                print(objects[0])
                 print(objects)
     draw(win,objects)
 pygame.quit()
