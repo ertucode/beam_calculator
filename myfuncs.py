@@ -41,6 +41,18 @@ def DrawButton(win,BUTTONCOLOR,x,y,width,height,th,text,TEXTCOLOR,FontType,FontS
     TextRect = TextRender.get_rect(center=(x+width/2,y+height/2))
     win.blit(TextRender,TextRect)
 
+def DrawButtonImg(win,BUTTONCOLOR,x,y,width,height,th,text,TEXTCOLOR,FontType,FontSize):
+    ButtonImg = pygame.image.load("buttonn.png")
+    x = x - width / 2
+    y = y - height / 2
+    ButtonRect = pygame.Rect(x,y,width,height)
+    win.blit(ButtonImg,(x,y-height/2))
+    myfont = pygame.font.SysFont(FontType, FontSize)
+    TextRender = myfont.render(text,True,TEXTCOLOR)
+    TextRect = TextRender.get_rect(center=(x+width/2,y+height/2))
+    TextRect.y = TextRect.y + 10
+    win.blit(TextRender,TextRect)
+
 def PrintMatrix(matrix):
     print('\n'.join(['\t'.join([str(cell) for cell in row]) for row in matrix]))
 

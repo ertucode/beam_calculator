@@ -4,14 +4,16 @@ from force import Force
 from support import Support
 from distributed_load import Distload
 from moment import Moment
+from button import Button
 from numpy import AxisError, array, linalg
 import numpy as np
 import myfuncs
 import copy
 import matplotlib.pyplot as plt
+
 from vars import beam_left, beam_right, beam_mid, beam_length, beam_height,\
      beam_below,beam_y,WIDTH,HEIGHT,BLACK,WHITE,ButtonKeys,ButtonQuestions,ButtonTexts,\
-         ButtonFont, ButtonFontSize, ButtonWidth, ButtonXMid, ButtonHeight, ButtonYStart, ButtonYInc
+         ButtonFont, ButtonFontSize, ButtonWidth, ButtonX, ButtonHeight, ButtonYStart, ButtonYInc
 
 
 
@@ -20,25 +22,32 @@ pygame.init()
 win = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Beam Calculator")
 
+buttons = []
+TextColor = WHITE
+fontsize = 17
+buttons.append(Button(ButtonX,ButtonYStart,imgloc="buttonnn.png",text=ButtonTexts["FixedSupport"],fontsize=fontsize,fontcolor=TextColor,questions=ButtonQuestions["FixedSupport"],type="fixed"))
+buttons.append(Button(ButtonX,ButtonYStart+1*ButtonYInc,imgloc="buttonnn.png",text=ButtonTexts["PinnedSupport"],fontsize=fontsize,fontcolor=TextColor,questions=ButtonQuestions["PinnedSupport"],type="pinned"))
+buttons.append(Button(ButtonX,ButtonYStart+2*ButtonYInc,imgloc="buttonnn.png",text=ButtonTexts["RollerSupport"],fontsize=fontsize,fontcolor=TextColor,questions=ButtonQuestions["RollerSupport"],type="roller"))
+buttons.append(Button(ButtonX,ButtonYStart+3*ButtonYInc,imgloc="buttonnn.png",text=ButtonTexts["Force"],fontsize=fontsize,fontcolor=TextColor,questions=ButtonQuestions["Force"],type="force"))
+buttons.append(Button(ButtonX,ButtonYStart+4*ButtonYInc,imgloc="buttonnn.png",text=ButtonTexts["DistributedLoad"],fontsize=fontsize,fontcolor=TextColor,questions=ButtonQuestions["DistributedLoad"],type="distload"))
+buttons.append(Button(ButtonX,ButtonYStart+5*ButtonYInc,imgloc="buttonnn.png",text=ButtonTexts["Moment"],fontsize=fontsize,fontcolor=TextColor,questions=ButtonQuestions["Moment"],type="moment"))
+buttons.append(Button(ButtonX,ButtonYStart+6*ButtonYInc,imgloc="buttonnn.png",text=ButtonTexts["ShowDiagrams"],fontsize=fontsize,fontcolor=TextColor,type="show"))
 
-def DrawButtons(win,ButtonKeys,ButtonQuestions,ButtonTexts):
-    myfuncs.DrawButton(win,BLACK,ButtonXMid,ButtonYStart,ButtonWidth,ButtonHeight,2,ButtonTexts["FixedSupportText"],BLACK,ButtonFont,ButtonFontSize)
-    myfuncs.DrawButton(win,BLACK,ButtonXMid,ButtonYStart+1*ButtonYInc,ButtonWidth,ButtonHeight,2,ButtonTexts["PinnedSupportText"],BLACK,ButtonFont,ButtonFontSize)
-    myfuncs.DrawButton(win,BLACK,ButtonXMid,ButtonYStart+2*ButtonYInc,ButtonWidth,ButtonHeight,2,ButtonTexts["RollerSupportText"],BLACK,ButtonFont,ButtonFontSize)
-    myfuncs.DrawButton(win,BLACK,ButtonXMid,ButtonYStart+3*ButtonYInc,ButtonWidth,ButtonHeight,2,ButtonTexts["ForceText"],BLACK,ButtonFont,ButtonFontSize)
-    myfuncs.DrawButton(win,BLACK,ButtonXMid,ButtonYStart+4*ButtonYInc,ButtonWidth,ButtonHeight,2,ButtonTexts["DistributedLoadText"],BLACK,ButtonFont,ButtonFontSize)
-    myfuncs.DrawButton(win,BLACK,ButtonXMid,ButtonYStart+5*ButtonYInc,ButtonWidth,ButtonHeight,2,ButtonTexts["MomentText"],BLACK,ButtonFont,ButtonFontSize)
-    myfuncs.DrawButton(win,BLACK,ButtonXMid,ButtonYStart+6*ButtonYInc,ButtonWidth,ButtonHeight,2,ButtonTexts["ShowText"],BLACK,ButtonFont,ButtonFontSize)
-
-def draw(win,objects):
+def draw(win,objects,buttons,sol):
     win.fill(WHITE)
     myfuncs.draw_at_center(win,(173,216,230),beam_mid,beam_y,beam_right-beam_left,beam_height,0)
+    myfuncs.draw_at_center(win,BLACK,beam_mid,beam_y,beam_right-beam_left,beam_height,1)
 
+    if not sol:
+        pygame.draw.circle(win,(255,0,0),(WIDTH/2,20),10)
+
+    for button in buttons:
+        button.draw(win)
     for subclass in objects:
         for object in objects[subclass]:
             object.draw(win)
     
-    DrawButtons(win,ButtonKeys,ButtonQuestions,ButtonTexts)
+    
 
     pygame.display.update()
 
@@ -114,12 +123,15 @@ def CalculateSupportReactions(objects):
     nmat = array(rows)
     cons = array(rrow)
 
+    objects["forces"] = myfuncs.RemoveLastN(objects["forces"],distcount)
     
     if linalg.det(nmat) != 0:
         ans = linalg.solve(nmat,cons)
         #print(ans)
     else:
-        print(f"There is no independent solution")
+        #print(f"There is no independent solution")
+        return False
+        
     
     for ind, support in enumerate(objects["supports"]):
         support.ReactionForce = ans[ind]
@@ -129,9 +141,43 @@ def CalculateSupportReactions(objects):
             support.ReactionMoment = ans[-fixedcount]
             fixedcount -= 1
     
-    objects["forces"] = myfuncs.RemoveLastN(objects["forces"],distcount)
-  
-def plottt(objects,beam_length):
+    return True
+    
+def GetUserInput(win):
+    getting = True
+    user_input = ""
+    text_rect = pygame.Rect(WIDTH/2,20,300,20)
+    InputFont = pygame.font.SysFont("comicsans",15)
+    while getting:
+        bg = pygame.Rect(ButtonX+ButtonWidth,0,WIDTH,100)
+        pygame.draw.rect(win,WHITE,bg)
+        text_sur = InputFont.render(user_input,True,BLACK)
+        pygame.draw.rect(win,BLACK,text_rect,2)
+        win.blit(text_sur,(text_rect.x+5,text_rect.centery-text_rect.height/2))
+        text_rect.w = max(text_sur.get_width() + 10,200)
+        pygame.display.update()
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                global run
+                run = False
+                getting = False
+
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_BACKSPACE:
+                    user_input = user_input[:-1]
+                elif event.key == pygame.K_RETURN:
+                    print(user_input)
+                    return user_input
+                    getting = False
+                else:
+                    user_input += event.unicode
+                if event.key == pygame.K_ESCAPE:
+                    getting = False
+
+
+
+def PlotDiagrams(objects,beam_length):
     inc = 0.005
     shears = []
     moments = []
@@ -180,7 +226,7 @@ def plottt(objects,beam_length):
     plt.xlim([0,beam_length])
     subplot[1].plot(x,moments)
     subplot[1].set_title("Moment Diagram")
-    subplot[1].fill(x, shears, facecolor='blue', alpha=0.1)
+    subplot[1].fill(x, moments, facecolor='blue', alpha=0.1)
     subplot[1].axhline(y=0, color='r', linestyle='--')
     plt.xlim([0,beam_length])
     plt.show()
@@ -191,53 +237,75 @@ def plottt(objects,beam_length):
 while run:
     FPS = 60
     clock.tick(FPS)
-    
+    t = 0
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False
             break
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            pos = pygame.mouse.get_pos()
+            for button in buttons:
+                button.isHovering(pos)
+                if button.big:
+                    Ans = AskForInputs(button.questions)
+                    if button.type == "fixed":
+                        NewOb = Support("fixed",side=Ans[0])
+                        objects["supports"].append(NewOb)   
+                    elif button.type == "pinned":
+                        NewOb = Support("pinned",float(Ans[0]))
+                        objects["supports"].append(NewOb)
+                    elif button.type == "roller":
+                        NewOb = Support("roller",float(Ans[0]))
+                        objects["supports"].append(NewOb)
+                    elif button.type == "force":
+                        NewOb = Force(float(Ans[0]),float(Ans[1]),float(Ans[2]))
+                        objects["forces"].append(NewOb)
+                    elif button.type == "distload":
+                        NewOb = Distload(float(Ans[1]),float(Ans[3]),float(Ans[2]),float(Ans[4]),str(Ans[0]))
+                        objects["distloads"].append(NewOb)   
+                    elif button.type == "moment":
+                        NewOb = Moment(float(Ans[0]),float(Ans[1]))
+                        objects["moments"].append(NewOb)   
+                    elif button.type == "show":
+                        PlotDiagrams(objects,beam_length)
 
         if event.type == pygame.KEYDOWN:
-            if event.key == ButtonKeys["FixedSupportKey"]:
-                Ans = AskForInputs(ButtonQuestions["FixedSupportQuestions"])
+            if  event.key == ButtonKeys["FixedSupportKey"]:
+                Ans = AskForInputs(ButtonQuestions["FixedSupport"])
                 NewOb = Support("fixed",side=Ans[0])
                 objects["supports"].append(NewOb)
-                print(NewOb)
-                CalculateSupportReactions(objects)
             if event.key == ButtonKeys["PinnedSupportKey"]:
-                Ans = AskForInputs(ButtonQuestions["PinnedSupportQuestions"])
+                Ans = AskForInputs(ButtonQuestions["PinnedSupport"])
                 NewOb = Support("pinned",float(Ans[0]))
                 objects["supports"].append(NewOb)
-                CalculateSupportReactions(objects)
             if event.key == ButtonKeys["RollerSupportKey"]:
-                Ans = AskForInputs(ButtonQuestions["RollerSupportQuestions"])
+                Ans = AskForInputs(ButtonQuestions["RollerSupport"])
                 NewOb = Support("roller",float(Ans[0]))
                 objects["supports"].append(NewOb)
-                CalculateSupportReactions(objects)
             if event.key == ButtonKeys["ForceKey"]:
-                Ans = AskForInputs(ButtonQuestions["ForceQuestions"])
+                Ans = AskForInputs(ButtonQuestions["Force"])
                 NewOb = Force(float(Ans[0]),float(Ans[1]),float(Ans[2]))
                 objects["forces"].append(NewOb)
-                CalculateSupportReactions(objects)
             if event.key == ButtonKeys["DistributedLoadKey"]:
-                Ans = AskForInputs(ButtonQuestions["DistributedLoadQuestions"])
+                Ans = AskForInputs(ButtonQuestions["DistributedLoad"])
                 NewOb = Distload(float(Ans[1]),float(Ans[3]),float(Ans[2]),float(Ans[4]),str(Ans[0]))
                 objects["distloads"].append(NewOb)          
             if event.key == ButtonKeys["MomentKey"]:
-                Ans = AskForInputs(ButtonQuestions["MomentQuestions"])
+                Ans = AskForInputs(ButtonQuestions["Moment"])
                 NewOb = Moment(float(Ans[0]),float(Ans[1]))
                 objects["moments"].append(NewOb)
-            if event.key == ButtonKeys["ShowItemsKey"]:
-                print(objects)
-            if event.key == pygame.K_8:
-                CalculateSupportReactions(objects)
-            if event.key == pygame.K_9:
-                for support in objects["supports"]:
-                    print(support)
-            if event.key == pygame.K_a:
-                plottt(objects,beam_length)
+            if event.key == ButtonKeys["ShowDiagramsKey"]:
+                PlotDiagrams(objects,beam_length)
+            if event.key == pygame.K_b:
+                GetUserInput(win)
+            t = 0
 
-    draw(win,objects)
+    pos = pygame.mouse.get_pos()
+    for button in buttons:
+        button.isHovering(pos)
+    sol = CalculateSupportReactions(objects)
+    draw(win,objects,buttons,sol)
+    
 pygame.quit()
 
 
