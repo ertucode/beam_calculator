@@ -4,7 +4,7 @@ from force import Force
 from support import Support
 from distributed_load import Distload
 from moment import Moment
-from button import Button
+from MyWidgets import Button, EntryField
 from numpy import AxisError, array, linalg
 import numpy as np
 import myfuncs
@@ -47,9 +47,7 @@ def draw(win,objects,buttons,sol):
         for object in objects[subclass]:
             object.draw(win)
     
-    
 
-    pygame.display.update()
 
 
 run = True
@@ -68,6 +66,23 @@ objects = {
     "distloads": [Distload(0,8,40,40,"down")],
     "moments": [Moment(11,-150)]
 }
+
+def ChangeActivity(fields,pos=0,place=0):
+    if pos:
+        for field in fields:
+            if field.isHovering(pos):
+                field.Active = True
+            else: field.Active = False
+        return fields
+    if place:
+        for field in fields:
+            if field.place == place:
+                field.Active = False
+                if place == len(fields):
+                    fields[0].Active = True
+                else:
+                    fields[place].Active = True
+        return fields
 
 def CalculateSupportReactions(objects):
     fy = 0
@@ -175,8 +190,6 @@ def GetUserInput(win):
                 if event.key == pygame.K_ESCAPE:
                     getting = False
 
-
-
 def PlotDiagrams(objects,beam_length):
     inc = 0.005
     shears = []
@@ -232,21 +245,55 @@ def PlotDiagrams(objects,beam_length):
     plt.show()
         
 
+fields = [EntryField(WIDTH/2,10,PromptWidth=150,height=25,PromptText="question1",place=1),
+        EntryField(WIDTH/2,40,PromptWidth=150,height=25,PromptText="question2",place=2),
+        EntryField(WIDTH/2,70,PromptWidth=150,height=25,PromptText="question3",place=3),]
 
+for field in fields:
+    field.Drawing=True
 
 while run:
-    FPS = 60
+    FPS = 120
     clock.tick(FPS)
-    t = 0
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False
             break
+        if event.type == pygame.MOUSEMOTION:
+            pos = pygame.mouse.get_pos()
+            hoverexists = False
+            for field in fields:
+                field.isHovering(pos)
+                if field.hover:
+                    pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_HAND)
+                    hoverexists = True
+                if not hoverexists: pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
+
         if event.type == pygame.MOUSEBUTTONDOWN:
             pos = pygame.mouse.get_pos()
+            for field in fields:
+                field.Active = False
+            for field in fields:
+                field.isHovering(pos)
+                if not field.hover: 
+                    field.Active = False
+                else: 
+                    field.Active = True
+            # for field in fields:
+            #     if field.Active:
+            #         field.GetUserInput(win,2)
+            for field in fields:
+                if field.deactivate:
+                    pos = pygame.mouse.get_pos()
+                    fields = ChangeActivity(fields,pos)
+                    field.deactivate = False
+                if field.tabbing:
+                    fields = ChangeActivity(fields,place=field.place)
+                    field.tabbing = False
+
             for button in buttons:
                 button.isHovering(pos)
-                if button.big:
+                if button.hover:
                     Ans = AskForInputs(button.questions)
                     if button.type == "fixed":
                         NewOb = Support("fixed",side=Ans[0])
@@ -268,6 +315,7 @@ while run:
                         objects["moments"].append(NewOb)   
                     elif button.type == "show":
                         PlotDiagrams(objects,beam_length)
+        
 
         if event.type == pygame.KEYDOWN:
             if  event.key == ButtonKeys["FixedSupportKey"]:
@@ -296,15 +344,25 @@ while run:
                 objects["moments"].append(NewOb)
             if event.key == ButtonKeys["ShowDiagramsKey"]:
                 PlotDiagrams(objects,beam_length)
-            if event.key == pygame.K_b:
-                GetUserInput(win)
-            t = 0
+            #if event.key == pygame.K_b:
+            #    GetUserInput(win)
+            else:
+                for field in fields:
+                    if field.Active:
+                        if len(field.EntryText)<10:
+                            field.EntryText += event.unicode
+            
+    
 
     pos = pygame.mouse.get_pos()
     for button in buttons:
         button.isHovering(pos)
     sol = CalculateSupportReactions(objects)
     draw(win,objects,buttons,sol)
+    for field in fields:
+        field.GetUserInput(win,2)
+    
+    pygame.display.update()
     
 pygame.quit()
 
