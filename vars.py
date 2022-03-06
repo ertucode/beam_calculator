@@ -22,28 +22,28 @@ fixed_height = 100
 distload_h = 50
 img = image.load("buttonnn.png")
 
-ButtonKeys = {"FixedSupportKey":K_F1
-            ,"PinnedSupportKey" : K_F2
-            ,"RollerSupportKey" : K_F3
-            ,"ForceKey" : K_F4
-            ,"DistributedLoadKey" : K_F5
-            ,"MomentKey" : K_F6
-            ,"ShowDiagramsKey" : K_F7}
+ButtonKeys = ([K_F1,"fixed"]
+            ,[K_F2,"pinned"]
+            ,[K_F3,"roller"]
+            ,[K_F4,"force"]
+            ,[K_F5,"distload"]
+            ,[K_F6,"moment"]
+            ,[K_F7,None])
 
-ButtonQuestions = {"FixedSupport":("Location[left/right]: ",)
-                , "PinnedSupport":("Location[m]: ",)
-                , "RollerSupport":("Location[m]: ",)
-                , "Force":("Location[m]: ","Magnitude[N]:","Angle[deg]:")
-                , "DistributedLoad":("Direction[up/down]:","Starting Location[m]: ","Starting Magnitude[N/m]: ","Ending Location[m]: ","Ending Magnitude[N⋅m]: ")
-                , "Moment":("Location[m]: ","Magnitude[N⋅m][""+"" for CCW ""-""CW]: ")}
+ButtonQuestions = (("Location[left/right]: ",)
+                , ("Location[m]: ",)
+                , ("Location[m]: ",)
+                , ("Location[m]: ","Magnitude[N]:","Angle[deg]:")
+                , ("Direction[up/down]:","Starting Location[m]: ","Starting Magnitude[N/m]: ","Ending Location[m]: ","Ending Magnitude[N⋅m]: ")
+                , ("Location[m]: ","Magnitude[N⋅m][""+"" for CCW ""-""CW]: "))
 
-ButtonTexts = {"FixedSupport":"F1-Fixed Support"
-            ,"PinnedSupport":"F2-Pinned Support"
-            ,"RollerSupport":"F3-Roller Support"
-            ,"Force":"F4-Force"
-            ,"DistributedLoad":"F5-Distributed Load"
-            ,"Moment":"F6-Moment"
-            ,"ShowDiagrams":"F7-Show Diagrams"}
+ButtonTexts = {"FixedSupport":"1-Fixed Support"
+            ,"PinnedSupport":"2-Pinned Support"
+            ,"RollerSupport":"3-Roller Support"
+            ,"Force":"4-Force"
+            ,"DistributedLoad":"5-Distributed Load"
+            ,"Moment":"6-Moment"
+            ,"ShowDiagrams":"7-Show Diagrams"}
 
 ButtonFont = "ComicSans"
 ButtonFontSize = 15

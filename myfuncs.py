@@ -1,3 +1,4 @@
+from tkinter.ttk import Scale
 import pygame
 import math
 import copy
@@ -68,4 +69,11 @@ def RemoveLastN(lst,n):
 def CopyDict(dict):
     dict2 = copy.deepcopy(dict)
     return dict2
+
+def ScaleRect(rect,ScaleFactor):
+    center = rect.center
+    rect.w = rect.w*ScaleFactor
+    rect.h = rect.h*ScaleFactor
+    rect.center = center
+    return rect
 

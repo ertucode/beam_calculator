@@ -4,7 +4,9 @@ from force import Force
 from support import Support
 from distributed_load import Distload
 from moment import Moment
-from MyWidgets import Button, EntryField
+from button import Button
+from entry import Entry
+from entry_handler import EntryHandler
 from numpy import AxisError, array, linalg
 import numpy as np
 import myfuncs
@@ -25,40 +27,37 @@ pygame.display.set_caption("Beam Calculator")
 buttons = []
 TextColor = WHITE
 fontsize = 17
-buttons.append(Button(ButtonX,ButtonYStart,imgloc="buttonnn.png",text=ButtonTexts["FixedSupport"],fontsize=fontsize,fontcolor=TextColor,questions=ButtonQuestions["FixedSupport"],type="fixed"))
-buttons.append(Button(ButtonX,ButtonYStart+1*ButtonYInc,imgloc="buttonnn.png",text=ButtonTexts["PinnedSupport"],fontsize=fontsize,fontcolor=TextColor,questions=ButtonQuestions["PinnedSupport"],type="pinned"))
-buttons.append(Button(ButtonX,ButtonYStart+2*ButtonYInc,imgloc="buttonnn.png",text=ButtonTexts["RollerSupport"],fontsize=fontsize,fontcolor=TextColor,questions=ButtonQuestions["RollerSupport"],type="roller"))
-buttons.append(Button(ButtonX,ButtonYStart+3*ButtonYInc,imgloc="buttonnn.png",text=ButtonTexts["Force"],fontsize=fontsize,fontcolor=TextColor,questions=ButtonQuestions["Force"],type="force"))
-buttons.append(Button(ButtonX,ButtonYStart+4*ButtonYInc,imgloc="buttonnn.png",text=ButtonTexts["DistributedLoad"],fontsize=fontsize,fontcolor=TextColor,questions=ButtonQuestions["DistributedLoad"],type="distload"))
-buttons.append(Button(ButtonX,ButtonYStart+5*ButtonYInc,imgloc="buttonnn.png",text=ButtonTexts["Moment"],fontsize=fontsize,fontcolor=TextColor,questions=ButtonQuestions["Moment"],type="moment"))
+buttons.append(Button(ButtonX,ButtonYStart,imgloc="buttonnn.png",text=ButtonTexts["FixedSupport"],fontsize=fontsize,fontcolor=TextColor,questions=ButtonQuestions[0],type="fixed"))
+buttons.append(Button(ButtonX,ButtonYStart+1*ButtonYInc,imgloc="buttonnn.png",text=ButtonTexts["PinnedSupport"],fontsize=fontsize,fontcolor=TextColor,questions=ButtonQuestions[1],type="pinned"))
+buttons.append(Button(ButtonX,ButtonYStart+2*ButtonYInc,imgloc="buttonnn.png",text=ButtonTexts["RollerSupport"],fontsize=fontsize,fontcolor=TextColor,questions=ButtonQuestions[2],type="roller"))
+buttons.append(Button(ButtonX,ButtonYStart+3*ButtonYInc,imgloc="buttonnn.png",text=ButtonTexts["Force"],fontsize=fontsize,fontcolor=TextColor,questions=ButtonQuestions[3],type="force"))
+buttons.append(Button(ButtonX,ButtonYStart+4*ButtonYInc,imgloc="buttonnn.png",text=ButtonTexts["DistributedLoad"],fontsize=fontsize,fontcolor=TextColor,questions=ButtonQuestions[4],type="distload"))
+buttons.append(Button(ButtonX,ButtonYStart+5*ButtonYInc,imgloc="buttonnn.png",text=ButtonTexts["Moment"],fontsize=fontsize,fontcolor=TextColor,questions=ButtonQuestions[5],type="moment"))
 buttons.append(Button(ButtonX,ButtonYStart+6*ButtonYInc,imgloc="buttonnn.png",text=ButtonTexts["ShowDiagrams"],fontsize=fontsize,fontcolor=TextColor,type="show"))
 
-def draw(win,objects,buttons,sol):
+def draw(win,objects,buttons,sol,handler=None,exists=False):
     win.fill(WHITE)
     myfuncs.draw_at_center(win,(173,216,230),beam_mid,beam_y,beam_right-beam_left,beam_height,0)
     myfuncs.draw_at_center(win,BLACK,beam_mid,beam_y,beam_right-beam_left,beam_height,1)
 
     if not sol:
-        pygame.draw.circle(win,(255,0,0),(WIDTH/2,20),10)
-
+        #pygame.draw.circle(win,(255,0,0),(WIDTH/2,20),10)
+        text_rect = pygame.Rect(WIDTH/2-50,HEIGHT-20,100,20)
+        myfont = pygame.font.SysFont("comicsans",12)
+        text_sur = myfont.render("The system has no solution",True,BLACK)
+        win.blit(text_sur,text_rect)
+    if exists:
+        handler.draw(win)
     for button in buttons:
         button.draw(win)
     for subclass in objects:
         for object in objects[subclass]:
             object.draw(win)
     
+    
 
+    pygame.display.update()
 
-
-run = True
-
-clock = pygame.time.Clock()
-
-def AskForInputs(questions):
-    answers = []
-    for question in questions:
-        answers.append(input(question))
-    return answers
 
 objects = {
     "supports": [Support("pinned",0),Support("roller",8)],
@@ -66,23 +65,6 @@ objects = {
     "distloads": [Distload(0,8,40,40,"down")],
     "moments": [Moment(11,-150)]
 }
-
-def ChangeActivity(fields,pos=0,place=0):
-    if pos:
-        for field in fields:
-            if field.isHovering(pos):
-                field.Active = True
-            else: field.Active = False
-        return fields
-    if place:
-        for field in fields:
-            if field.place == place:
-                field.Active = False
-                if place == len(fields):
-                    fields[0].Active = True
-                else:
-                    fields[place].Active = True
-        return fields
 
 def CalculateSupportReactions(objects):
     fy = 0
@@ -157,38 +139,6 @@ def CalculateSupportReactions(objects):
             fixedcount -= 1
     
     return True
-    
-def GetUserInput(win):
-    getting = True
-    user_input = ""
-    text_rect = pygame.Rect(WIDTH/2,20,300,20)
-    InputFont = pygame.font.SysFont("comicsans",15)
-    while getting:
-        bg = pygame.Rect(ButtonX+ButtonWidth,0,WIDTH,100)
-        pygame.draw.rect(win,WHITE,bg)
-        text_sur = InputFont.render(user_input,True,BLACK)
-        pygame.draw.rect(win,BLACK,text_rect,2)
-        win.blit(text_sur,(text_rect.x+5,text_rect.centery-text_rect.height/2))
-        text_rect.w = max(text_sur.get_width() + 10,200)
-        pygame.display.update()
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                global run
-                run = False
-                getting = False
-
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_BACKSPACE:
-                    user_input = user_input[:-1]
-                elif event.key == pygame.K_RETURN:
-                    print(user_input)
-                    return user_input
-                    getting = False
-                else:
-                    user_input += event.unicode
-                if event.key == pygame.K_ESCAPE:
-                    getting = False
 
 def PlotDiagrams(objects,beam_length):
     inc = 0.005
@@ -244,125 +194,131 @@ def PlotDiagrams(objects,beam_length):
     plt.xlim([0,beam_length])
     plt.show()
         
+def GetEntryFields(type,questions):
+    entries = []
+    getLetter = False
+    First = True
+    if type == "fixed" or type == "distload":
+        getLetter = True
+    for question in questions:
+        entries.append(Entry(25,Prompt=(question,200,(255,255,255),(0,0,200)),Input=["",100,(255,255,255),(0,0,200)],getLetter=getLetter,Active = First))
+        getLetter = False
+        First = False
+    return entries
 
-fields = [EntryField(WIDTH/2,10,PromptWidth=150,height=25,PromptText="question1",place=1),
-        EntryField(WIDTH/2,40,PromptWidth=150,height=25,PromptText="question2",place=2),
-        EntryField(WIDTH/2,70,PromptWidth=150,height=25,PromptText="question3",place=3),]
 
-for field in fields:
-    field.Drawing=True
+
+exists = False
+deleted = True
+run = True
+
+####
+# entries = GetEntryFields(None,["Beam Length"])
+# handler = EntryHandler(entries,WIDTH/2-100,0,ySpacing=10,type="beam")
+# deleted = False
+# handler.Exist = True
+# exists = True
+
+
+clock = pygame.time.Clock()
 
 while run:
-    FPS = 120
+    FPS = 60
     clock.tick(FPS)
+    if exists:
+        exists = handler.Exist
+        if not exists:
+            deleted = False
+
+    if exists == False and deleted == False:
+        del handler
+        deleted = True
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False
             break
-        if event.type == pygame.MOUSEMOTION:
-            pos = pygame.mouse.get_pos()
-            hoverexists = False
-            for field in fields:
-                field.isHovering(pos)
-                if field.hover:
-                    pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_HAND)
-                    hoverexists = True
-                if not hoverexists: pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
+        if exists:
+            if event.type == pygame.MOUSEMOTION:
+                pos = pygame.mouse.get_pos()
+                handler.HandleHovering(pos)
 
         if event.type == pygame.MOUSEBUTTONDOWN:
             pos = pygame.mouse.get_pos()
-            for field in fields:
-                field.Active = False
-            for field in fields:
-                field.isHovering(pos)
-                if not field.hover: 
-                    field.Active = False
-                else: 
-                    field.Active = True
-            # for field in fields:
-            #     if field.Active:
-            #         field.GetUserInput(win,2)
-            for field in fields:
-                if field.deactivate:
-                    pos = pygame.mouse.get_pos()
-                    fields = ChangeActivity(fields,pos)
-                    field.deactivate = False
-                if field.tabbing:
-                    fields = ChangeActivity(fields,place=field.place)
-                    field.tabbing = False
-
+            if exists:
+                handler.HandleMouseDown(pos)
             for button in buttons:
                 button.isHovering(pos)
-                if button.hover:
-                    Ans = AskForInputs(button.questions)
-                    if button.type == "fixed":
-                        NewOb = Support("fixed",side=Ans[0])
-                        objects["supports"].append(NewOb)   
-                    elif button.type == "pinned":
-                        NewOb = Support("pinned",float(Ans[0]))
-                        objects["supports"].append(NewOb)
-                    elif button.type == "roller":
-                        NewOb = Support("roller",float(Ans[0]))
-                        objects["supports"].append(NewOb)
-                    elif button.type == "force":
-                        NewOb = Force(float(Ans[0]),float(Ans[1]),float(Ans[2]))
-                        objects["forces"].append(NewOb)
-                    elif button.type == "distload":
-                        NewOb = Distload(float(Ans[1]),float(Ans[3]),float(Ans[2]),float(Ans[4]),str(Ans[0]))
-                        objects["distloads"].append(NewOb)   
-                    elif button.type == "moment":
-                        NewOb = Moment(float(Ans[0]),float(Ans[1]))
-                        objects["moments"].append(NewOb)   
+                if button.big:
+                    if button.type == "fixed" or button.type == "pinned" or button.type == "roller" or button.type == "force" or button.type == "distload" or button.type == "moment":
+                        entries= GetEntryFields(button.type,button.questions)
+                        handler = EntryHandler(entries,WIDTH/2-100,0,ySpacing=10,type=button.type)
+                        deleted = False
+                        handler.Exist = True
+                        exists = True
                     elif button.type == "show":
                         PlotDiagrams(objects,beam_length)
-        
 
         if event.type == pygame.KEYDOWN:
-            if  event.key == ButtonKeys["FixedSupportKey"]:
-                Ans = AskForInputs(ButtonQuestions["FixedSupport"])
+            if exists:
+                handler.HandleKeyInputs(event.key)
+            for i,keys in enumerate(ButtonKeys):
+                if i==6:
+                    if event.key == ButtonKeys[i][0]:
+                        PlotDiagrams(objects,beam_length)
+                else:
+                    if event.key == ButtonKeys[i][0]:
+                        type = ButtonKeys[i][1]
+                        entries= GetEntryFields(type,ButtonQuestions[i])
+                        handler = EntryHandler(entries,WIDTH/2-100,0,ySpacing=10,type=type)
+                        # handler = copy.deepcopy(handler)
+                        deleted = False
+                        handler.Exist = True
+                        exists = True
+            
+            if event.key == pygame.K_ASTERISK:
+                # handler = copy.deepcopy(pocket)
+                # deleted = False
+                # handler.Exist = True
+                # exists = True
+                pass
+            else:
+                if exists: 
+                    handler.TypeToActive(event)
+
+    if not deleted:
+        if handler.results:
+            type = handler.type
+            Ans = handler.results
+            if type == "fixed":
                 NewOb = Support("fixed",side=Ans[0])
-                objects["supports"].append(NewOb)
-            if event.key == ButtonKeys["PinnedSupportKey"]:
-                Ans = AskForInputs(ButtonQuestions["PinnedSupport"])
+                objects["supports"].append(NewOb)   
+            elif type == "pinned":
                 NewOb = Support("pinned",float(Ans[0]))
                 objects["supports"].append(NewOb)
-            if event.key == ButtonKeys["RollerSupportKey"]:
-                Ans = AskForInputs(ButtonQuestions["RollerSupport"])
+            elif type == "roller":
                 NewOb = Support("roller",float(Ans[0]))
                 objects["supports"].append(NewOb)
-            if event.key == ButtonKeys["ForceKey"]:
-                Ans = AskForInputs(ButtonQuestions["Force"])
+            elif type == "force":
                 NewOb = Force(float(Ans[0]),float(Ans[1]),float(Ans[2]))
                 objects["forces"].append(NewOb)
-            if event.key == ButtonKeys["DistributedLoadKey"]:
-                Ans = AskForInputs(ButtonQuestions["DistributedLoad"])
+            elif type == "distload":
                 NewOb = Distload(float(Ans[1]),float(Ans[3]),float(Ans[2]),float(Ans[4]),str(Ans[0]))
-                objects["distloads"].append(NewOb)          
-            if event.key == ButtonKeys["MomentKey"]:
-                Ans = AskForInputs(ButtonQuestions["Moment"])
+                objects["distloads"].append(NewOb)   
+            elif type == "moment":
                 NewOb = Moment(float(Ans[0]),float(Ans[1]))
-                objects["moments"].append(NewOb)
-            if event.key == ButtonKeys["ShowDiagramsKey"]:
-                PlotDiagrams(objects,beam_length)
-            #if event.key == pygame.K_b:
-            #    GetUserInput(win)
-            else:
-                for field in fields:
-                    if field.Active:
-                        if len(field.EntryText)<10:
-                            field.EntryText += event.unicode
-            
-    
+                objects["moments"].append(NewOb)   
+            elif type == "beam":
+                beam_length = Ans[0]
+
 
     pos = pygame.mouse.get_pos()
     for button in buttons:
         button.isHovering(pos)
     sol = CalculateSupportReactions(objects)
-    draw(win,objects,buttons,sol)
-    for field in fields:
-        field.GetUserInput(win,2)
-    
-    pygame.display.update()
+    if exists:
+        draw(win,objects,buttons,sol,handler,exists)
+    else:
+        draw(win,objects,buttons,sol)
     
 pygame.quit()
 
