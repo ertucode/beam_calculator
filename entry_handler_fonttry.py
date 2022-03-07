@@ -1,47 +1,8 @@
 import pygame
 from myfuncs import ScaleRect
 from myfuncs import draw_arrow as DrawArrow
-from vars import WIDTH
-from numpy import arange
-from math import sqrt
+from vars import allfonts
 
-
-
-from force import Force
-from support import Support
-from distributed_load import Distload
-from moment import Moment
-from button import Button
-from vars import fixed_height
-
-def draw_dashed_line(surf, color, start_pos, end_pos, width=1, dash_length=10):
-    x1, y1 = start_pos
-    x2, y2 = end_pos
-    dl = dash_length
-
-    if (x1 == x2):
-        ycoords = [y for y in range(y1, y2, dl if y1 < y2 else -dl)]
-        xcoords = [x1] * len(ycoords)
-    elif (y1 == y2):
-        xcoords = [x for x in range(x1, x2, dl if x1 < x2 else -dl)]
-        ycoords = [y1] * len(xcoords)
-    else:
-        a = abs(x2 - x1)
-        b = abs(y2 - y1)
-        c = round(sqrt(a**2 + b**2))
-        dx = dl * a / c
-        dy = dl * b / c
-
-        xcoords = [x for x in arange(x1, x2, dx if x1 < x2 else -dx)]
-        ycoords = [y for y in arange(y1, y2, dy if y1 < y2 else -dy)]
-
-    next_coords = list(zip(xcoords[1::2], ycoords[1::2]))
-    last_coords = list(zip(xcoords[0::2], ycoords[0::2]))
-    for (x1, y1), (x2, y2) in zip(next_coords, last_coords):
-        start = (round(x1), round(y1))
-        end = (round(x2), round(y2))
-        pygame.draw.line(surf, color, start, end, width)
-    
 class EntryHandler:
     def __init__(self,entries,x,y,xSpacing=0,ySpacing=0,Exist = True,type=None):
         self.entries = entries
@@ -52,7 +13,10 @@ class EntryHandler:
         self.Exist = Exist
         self.results = None
         self.type = type
-        self.arrowimg = pygame.image.load("arroww.png")
+        self.fonts = allfonts
+        self.Nfonts = len(self.fonts)
+        self.fontind = -1
+        self.entrycounter = 0
         ### change font with a press
 
     def DrawPrompts(self,win):
@@ -69,8 +33,7 @@ class EntryHandler:
                 
                 if entry.Active:
                     #pygame.draw.circle(win,(255,0,0),(text_rect.left-10,text_rect.centery),5)
-                    #DrawArrow(win,entry.PromptBackgroundColor,(text_rect.left-40,text_rect.centery),(text_rect.left-10,text_rect.centery),2)
-                    win.blit(self.arrowimg,(text_rect.left-60,text_rect.top-7))
+                    DrawArrow(win,entry.PromptBackgroundColor,(text_rect.left-40,text_rect.centery),(text_rect.left-10,text_rect.centery),2)
 
     def DrawEntries(self,win):
         if self.ySpacing:
@@ -99,50 +62,11 @@ class EntryHandler:
                 pygame.draw.rect(win,entry.PromptBackgroundColor,PromptBg)
                 pygame.draw.rect(win,entry.InputBackgroundColor,InputBg)
 
-    def DrawActive(self,win):
-        type = self.GetActiveType()
-        xoff = 40
-        yoff = 20
-        sideL = 100
-        orect = pygame.Rect(WIDTH-xoff-sideL,yoff,sideL,sideL)
-        if type == "fixed" or type == "pinned" or type == "roller" or type == "force" or type == "distload" or type == "moment":
-            outlinecolor = (255,0,0)
-            self.DrawDemoOutline(win,outlinecolor,orect)
-        if type == "fixed":
-            demo = Support("fixed",side="left",demo=True,demox = orect.centerx,demoy = orect.centery - fixed_height/4 )
-        elif type == "pinned":
-            demo = Support("pinned",demo=True,demox = orect.centerx,demoy = orect.centery)
-        elif type == "roller":
-            demo = Support("roller",demo=True,demox = orect.centerx,demoy = orect.centery)
-        elif type == "force":
-            demo = Force(0,10,45,demo=True,demox=orect.centerx-0.125*orect.w,demoy=orect.centery+0.125*orect.h)
-        elif type == "distload":
-            xoff = 10
-            demo = Distload(orect.left + xoff,orect.right - xoff,2,3,"down",demo=True,demoy=orect.centery)
-        elif type == "moment":
-            demo = Moment(orect.centerx,1,demo=True,demoy=orect.centery)
-        else:
-            demo = None
-            orect.w = orect.w * 1.1
-            orect.h = orect.h * 1.1
-            pygame.draw.rect(win,(255,255,255),orect)
-        if demo:
-            demo.draw(win,1)
-
-#######################
-    def DrawDemoOutline(self,win,outlinecolor,orect):
-        draw_dashed_line(win,outlinecolor,orect.topright,orect.topleft,2)
-        draw_dashed_line(win,outlinecolor,orect.bottomleft,orect.bottomright,2)
-        draw_dashed_line(win,outlinecolor,orect.topleft,orect.bottomleft,2)
-        draw_dashed_line(win,outlinecolor,orect.bottomright,orect.topright,2)
-
 
     def draw(self,win):
         self.DrawBackground(win)
         self.DrawPrompts(win)
         self.DrawEntries(win)
-        self.DrawActive(win)
-
 
     def HandleKeyInputs(self,key):
         if key == pygame.K_DOWN:
@@ -154,7 +78,27 @@ class EntryHandler:
                 self.ActivateNextOne() 
             else: 
                 self.ReturnResults()
+        elif key == pygame.K_F12:
+            self.fontind += 1
+            if self.fontind == self.Nfonts:
+                self.fontind = 0
+            
+            self.entrycounter +=1
+            if self.entrycounter == len(self.entries):
+                self.entrycounter = 0
+            self.UpdateFont()
 
+        elif key == pygame.K_F11:
+            self.fontind -= 1
+            if self.fontind <= -1:
+                self.fontind = self.Nfonts-1
+            
+            self.entrycounter -=1
+            if self.entrycounter == -1:
+                self.entrycounter = len(self.entries)-1
+            self.UpdateFont()
+        elif key == pygame.K_KP_MULTIPLY:
+            print(self.fonts[self.fontind])
         elif key == pygame.K_TAB:
             if self.NoActive():
                 self.ActivateOne(0) 
@@ -164,6 +108,10 @@ class EntryHandler:
             self.DeactivateAll()
         else:
             pass
+        
+    def UpdateFont(self):
+        print(self.entrycounter)
+        self.entries[self.entrycounter].font = self.fonts[self.fontind]
 
     def ActivateOne(self,index):
         for ind, entry in enumerate(self.entries):
@@ -276,16 +224,8 @@ class EntryHandler:
                         self.entries[ind].InputText += event.unicode
                 except:
                     pass
-                if str(event.unicode) == "." or str(event.unicode) == "-":
-                   if len(self.entries[ind].InputText)<=10:
-                        self.entries[ind].InputText += event.unicode 
-
-    def GetActiveType(self):
-        for entry in self.entries:
-            if entry.Active:
-                return entry.type
-        return None
             
+
     def ReturnResults(self):
         self.results = []
         for i,entry in enumerate(self.entries):

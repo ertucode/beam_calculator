@@ -22,7 +22,7 @@ def draw_roller_sup(win,COLOR,x,y,width,height,th):
 def draw_fixed_sup(win,COLOR,x,y,side,width,height,th):
     pygame.draw.rect(win,COLOR,(x,y,width,height),th)
     trw = width/3
-    if side == "left":
+    if side == "left" or side=="demo":
         draw_tırtık(win,COLOR,"left",x-trw,y,trw,height,15,2)
     elif side == "right":
         draw_tırtık(win,COLOR,"left",x+width,y,trw,height,15,2)
@@ -59,12 +59,18 @@ def draw_tırtık(win,COLOR,side,x,y,width,height,count,th):
             pygame.draw.line(win,COLOR,(firstx1,firsty1+offset),(firstx2,firsty2+offset),th)
 
 class Support:
-    def __init__(self,type,x=0,side =""):
-        self.x = x
-        self.mappedx = myfuncs.map_value(x,0,beam_length,beam_left,beam_right)
-        self.type = type
+    def __init__(self,type,x=0,side =None,demo=False,demox = 1000,demoy= 0):
         self.side = side
-        self.set_fixed()
+        self.demo = demo
+        self.x = x
+        if not self.demo:
+            
+            self.mappedx = myfuncs.map_value(x,0,beam_length,beam_left,beam_right)
+            self.set_fixed()
+        else:
+            self.mappedx = demox
+            self.demoy = demoy
+        self.type = type
         self.ReactionForce = "Not Calculated"
 
 
@@ -77,19 +83,38 @@ class Support:
             self.mappedx = beam_right
         self.ReactionMoment = "Not Calculated"
 
-    def draw(self,win):
+    def UpdateBeamLength(self,beam_length):
+        if self.type == "fixed":
+            if self.side == "right":
+                self.x = beam_length
+
+        self.mappedx = myfuncs.map_value(self.x,0,beam_length,beam_left,beam_right)
+
+    def draw(self,win,beam_length):
+        if not self.demo:
+            self.UpdateBeamLength(beam_length)
+
         if self.type=="pinned":
-            draw_pinned_sup(win,BLACK,self.mappedx,beam_below,sup_height,sup_height,2)
+            if self.demo:
+                draw_pinned_sup(win,BLACK,self.mappedx,self.demoy,sup_height,sup_height,2)
+            else:
+                draw_pinned_sup(win,BLACK,self.mappedx,beam_below,sup_height,sup_height,2)
         elif self.type=="roller":
-            draw_roller_sup(win,BLACK,self.mappedx,beam_below,sup_height,sup_height,2)
+            if self.demo:
+                draw_roller_sup(win,BLACK,self.mappedx,self.demoy,sup_height,sup_height,2)
+            else:
+                draw_roller_sup(win,BLACK,self.mappedx,beam_below,sup_height,sup_height,2)
         elif self.type == "fixed":
-            if self.side == "left":
-                draw_fixed_sup(win,BLACK,self.mappedx-fixed_width,beam_y - fixed_height/2,self.side,fixed_width,fixed_height,2)
-            elif self.side == "right":
-                draw_fixed_sup(win,BLACK,self.mappedx            ,beam_y - fixed_height/2,self.side,fixed_width,fixed_height,2)
+            if not self.demo:
+                if self.side == "left":
+                    draw_fixed_sup(win,BLACK,self.mappedx-fixed_width,beam_y - fixed_height/2,self.side,fixed_width,fixed_height,2)
+                elif self.side == "right":
+                    draw_fixed_sup(win,BLACK,self.mappedx            ,beam_y - fixed_height/2,self.side,fixed_width,fixed_height,2)
+            else:
+                draw_fixed_sup(win,BLACK,self.mappedx            ,self.demoy,self.side,fixed_width/2,fixed_height/2,2)
     
-    def __eq__(self,other):
-        return self.type==other.type and self.x==other.x and self.side==other.side
+    # def __eq__(self,other):
+    #     return self.type==other.type and self.x==other.x and self.side==other.side
 
     def __str__(self):
         if self.type == "fixed":

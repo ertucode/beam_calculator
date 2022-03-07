@@ -1,10 +1,15 @@
 import pygame
-import math
+from vars import mainfont, FULLHEIGHT, sup_height
+from entry_handler import draw_dashed_line
+from time import sleep
+
+from math import pi, sin,cos
 from force import Force
 from support import Support
 from distributed_load import Distload
 from moment import Moment
 from button import Button
+
 from entry import Entry
 from entry_handler import EntryHandler
 from numpy import AxisError, array, linalg
@@ -13,58 +18,152 @@ import myfuncs
 import copy
 import matplotlib.pyplot as plt
 
+
 from vars import beam_left, beam_right, beam_mid, beam_length, beam_height,\
      beam_below,beam_y,WIDTH,HEIGHT,BLACK,WHITE,ButtonKeys,ButtonQuestions,ButtonTexts,\
          ButtonFont, ButtonFontSize, ButtonWidth, ButtonX, ButtonHeight, ButtonYStart, ButtonYInc
 
 
-
+imgpath = "button1.png"
 pygame.init()
 
-win = pygame.display.set_mode((WIDTH, HEIGHT))
+win = pygame.display.set_mode((WIDTH, FULLHEIGHT))
 pygame.display.set_caption("Beam Calculator")
 
 buttons = []
-TextColor = WHITE
+TextColor = (50,50,200)
+TextColor = (200,50,50)
 fontsize = 17
-buttons.append(Button(ButtonX,ButtonYStart,imgloc="buttonnn.png",text=ButtonTexts["FixedSupport"],fontsize=fontsize,fontcolor=TextColor,questions=ButtonQuestions[0],type="fixed"))
-buttons.append(Button(ButtonX,ButtonYStart+1*ButtonYInc,imgloc="buttonnn.png",text=ButtonTexts["PinnedSupport"],fontsize=fontsize,fontcolor=TextColor,questions=ButtonQuestions[1],type="pinned"))
-buttons.append(Button(ButtonX,ButtonYStart+2*ButtonYInc,imgloc="buttonnn.png",text=ButtonTexts["RollerSupport"],fontsize=fontsize,fontcolor=TextColor,questions=ButtonQuestions[2],type="roller"))
-buttons.append(Button(ButtonX,ButtonYStart+3*ButtonYInc,imgloc="buttonnn.png",text=ButtonTexts["Force"],fontsize=fontsize,fontcolor=TextColor,questions=ButtonQuestions[3],type="force"))
-buttons.append(Button(ButtonX,ButtonYStart+4*ButtonYInc,imgloc="buttonnn.png",text=ButtonTexts["DistributedLoad"],fontsize=fontsize,fontcolor=TextColor,questions=ButtonQuestions[4],type="distload"))
-buttons.append(Button(ButtonX,ButtonYStart+5*ButtonYInc,imgloc="buttonnn.png",text=ButtonTexts["Moment"],fontsize=fontsize,fontcolor=TextColor,questions=ButtonQuestions[5],type="moment"))
-buttons.append(Button(ButtonX,ButtonYStart+6*ButtonYInc,imgloc="buttonnn.png",text=ButtonTexts["ShowDiagrams"],fontsize=fontsize,fontcolor=TextColor,type="show"))
+j=0
+for i, button in enumerate(ButtonKeys):
+    if i == 6:
+        buttons.append(Button(ButtonX,ButtonYStart+i*ButtonYInc,width=ButtonWidth,height=ButtonHeight,imgloc=imgpath,text=ButtonTexts[i],fontsize=fontsize,fontcolor=TextColor,type=ButtonKeys[i][1]))
+    else:
+        buttons.append(Button(ButtonX,ButtonYStart+i*ButtonYInc,width=ButtonWidth,height=ButtonHeight,imgloc=imgpath,text=ButtonTexts[i],fontsize=fontsize,fontcolor=TextColor,questions=ButtonQuestions[j],type=ButtonKeys[i][1]))
+        j+=1
 
-def draw(win,objects,buttons,sol,handler=None,exists=False):
+def PrintText(win,x,y,text,font=mainfont,fontsize=15,color=(0,0,0)):
+    pos = (x,y)
+    myfont = pygame.font.SysFont(font,fontsize)
+    text_sur = myfont.render(text,True,color)
+    win.blit(text_sur,pos)
+
+def PrintTextatCenter(win,text_rect,text,font=mainfont,fontsize=15,color=(0,0,0)):
+    xc = text_rect[0] + text_rect[2]/2
+    yc = text_rect[1] + text_rect[3]/2
+    myfont = pygame.font.SysFont(font,fontsize)
+    text_sur = myfont.render(text,True,color)
+    text_rect = text_sur.get_rect(center=(xc, yc))
+    win.blit(text_sur,text_rect)
+
+
+def draw(win,objects,buttons,sol,handler=None,exists=False,beam_length=beam_length):
     win.fill(WHITE)
     myfuncs.draw_at_center(win,(173,216,230),beam_mid,beam_y,beam_right-beam_left,beam_height,0)
     myfuncs.draw_at_center(win,BLACK,beam_mid,beam_y,beam_right-beam_left,beam_height,1)
 
     if not sol:
         #pygame.draw.circle(win,(255,0,0),(WIDTH/2,20),10)
-        text_rect = pygame.Rect(WIDTH/2-50,HEIGHT-20,100,20)
-        myfont = pygame.font.SysFont("comicsans",12)
+        text_rect = pygame.Rect(WIDTH/2-50,HEIGHT-50,100,20)
+        myfont = pygame.font.SysFont(mainfont,12)
         text_sur = myfont.render("The system has no solution",True,BLACK)
         win.blit(text_sur,text_rect)
+    
+    PrintText(win,ButtonX,15,f"Beam length: {beam_length} m")
+
+    rects = ShowObjects(win,objects,(20,HEIGHT - 20),20,100,FULLHEIGHT-HEIGHT+10,(220,220,255))
+    
     if exists:
         handler.draw(win)
+
     for button in buttons:
         button.draw(win)
     for subclass in objects:
         for object in objects[subclass]:
-            object.draw(win)
+            object.draw(win,beam_length)
     
     
 
     pygame.display.update()
+    return rects
 
 
 objects = {
-    "supports": [Support("pinned",0),Support("roller",8)],
-    "forces": [Force(11,20,270)],
-    "distloads": [Distload(0,8,40,40,"down")],
-    "moments": [Moment(11,-150)]
+    "supports": [],
+    "forces": [],
+    "distloads": [],
+    "moments": []
 }
+
+def DrawDemoOutline(win,outlinecolor,orect):
+    draw_dashed_line(win,outlinecolor,orect.topright,orect.topleft,2)
+    draw_dashed_line(win,outlinecolor,orect.bottomleft,orect.bottomright,2)
+    draw_dashed_line(win,outlinecolor,orect.topleft,orect.bottomleft,2)
+    draw_dashed_line(win,outlinecolor,orect.bottomright,orect.topright,2)
+
+def ShowObjects(win,objects,startpos,xoff,width,height,outlinecolor):
+    rects = []
+    i = 0
+    x = startpos[0]
+    y = startpos[1]
+    txth = 15
+    
+    for subclass in objects:
+        for object in objects[subclass]:
+            orect = pygame.Rect(x+i*(width+xoff),y,width,height)
+            rects.append(orect)
+            i += 1
+            if object.type == "fixed" or object.type == "pinned" or object.type == "roller" or object.type == "force" or object.type == "distload" or object.type == "moment":
+                DrawDemoOutline(win,outlinecolor,orect)
+            if object.type == "fixed":
+                demo = Support("fixed",side=object.side,demo=True,demox = orect.centerx,demoy = orect.centery - height/4 - 30)
+                datas = (f"type = {demo.type}",f"side = {demo.side}")
+                for ind,data in enumerate(datas):
+                    text_rect = orect.x,orect.y+ind*txth,width,height
+                    PrintTextatCenter(win,text_rect,data,font="javanesetext",fontsize=14)
+
+            elif object.type == "pinned" or object.type == "roller":
+                demo = Support(object.type,x=object.x,demo=True,demox = orect.centerx,demoy = orect.top + sup_height - 20)
+                datas = (f"type = {demo.type}",f"x = {demo.x}")
+                for ind,data in enumerate(datas):
+                    text_rect = orect.x,orect.y+ind*txth,width,height
+                    PrintTextatCenter(win,text_rect,str(data),font="javanesetext",fontsize=14)
+            elif object.type == "force":
+                desy = orect.top + 40
+                mag = object.forcelen/2
+                posx = orect.centerx - cos(object.angle)*mag / 2
+                posy = desy +sin(object.angle)*mag /2
+                demo = Force(object.x,object.mag,object.deg,demo=True,demox=posx,demoy=posy)
+                datas = (f"x = {demo.x}",f"Mag = {demo.mag}",f"Ang = {demo.deg}")
+                for ind,data in enumerate(datas):
+                    text_rect = orect.x,orect.y+ind*txth,width,height
+                    PrintTextatCenter(win,text_rect,str(data),font="javanesetext",fontsize=14)
+            elif object.type == "distload":
+                xxoff = 10
+                if object.dir == "down":
+                    disy = orect.top + object.h
+                elif object.dir == "up":
+                    disy = orect.top + object.h/2
+                demo = Distload(orect.left + xxoff,orect.right - xxoff,object.startmag,object.endmag,object.dir,demo=True,demoy=disy)
+                datas = (f"Dir = {object.dir}",f"x_i = {object.startx}",f"x_f = {object.endx}",f"Mag_i = {object.startmag}",f"Mag_f = {object.endmag}")
+                for ind,data in enumerate(datas):
+                    text_rect = orect.x,orect.y+ind*txth,width,height
+                    PrintTextatCenter(win,text_rect,str(data),font="javanesetext",fontsize=14)
+
+            elif object.type == "moment":
+                demo = Moment(orect.centerx,object.mag,demo=True,demoy=orect.top + object.momentw )
+                datas = (f"x = {object.x}",f"Mag = {object.mag}",f"Dir = {object.dir}")
+                for ind,data in enumerate(datas):
+                    text_rect = orect.x,orect.y+ind*txth,width,height
+                    PrintTextatCenter(win,text_rect,str(data),font="javanesetext",fontsize=14)
+            else:
+                demo = None
+                orect.w = orect.w * 1.1
+                orect.h = orect.h * 1.1
+                pygame.draw.rect(win,(255,255,255),orect)
+            if demo:
+                demo.draw(win,1)
+    return rects
 
 def CalculateSupportReactions(objects):
     fy = 0
@@ -122,11 +221,12 @@ def CalculateSupportReactions(objects):
 
     objects["forces"] = myfuncs.RemoveLastN(objects["forces"],distcount)
     
-    if linalg.det(nmat) != 0:
-        ans = linalg.solve(nmat,cons)
-        #print(ans)
+    if nmat.shape[0] == nmat.shape[1]:
+        if linalg.det(nmat) != 0:
+            ans = linalg.solve(nmat,cons)
+        else:
+            return False
     else:
-        #print(f"There is no independent solution")
         return False
         
     
@@ -139,6 +239,7 @@ def CalculateSupportReactions(objects):
             fixedcount -= 1
     
     return True
+
 
 def PlotDiagrams(objects,beam_length):
     inc = 0.005
@@ -201,11 +302,18 @@ def GetEntryFields(type,questions):
     if type == "fixed" or type == "distload":
         getLetter = True
     for question in questions:
-        entries.append(Entry(25,Prompt=(question,200,(255,255,255),(0,0,200)),Input=["",100,(255,255,255),(0,0,200)],getLetter=getLetter,Active = First))
+        entries.append(Entry(25,Prompt=(question,200,(255,255,255),(0,0,200)),Input=["",100,(255,255,255),(0,0,200)],getLetter=getLetter,Active = First,type=type))
         getLetter = False
         First = False
     return entries
 
+def DisplayErrorMessage(win,message):
+    text_rect = pygame.Rect(WIDTH/2-50,HEIGHT-30,100,20)
+    myfont = pygame.font.SysFont(mainfont,12)
+    text_sur = myfont.render(message,True,BLACK)
+    win.blit(text_sur,text_rect)
+    pygame.display.update()
+    sleep(1)
 
 
 exists = False
@@ -213,15 +321,16 @@ deleted = True
 run = True
 
 ####
-# entries = GetEntryFields(None,["Beam Length"])
-# handler = EntryHandler(entries,WIDTH/2-100,0,ySpacing=10,type="beam")
-# deleted = False
-# handler.Exist = True
-# exists = True
+entries = GetEntryFields(None,["Beam Length"])
+handler = EntryHandler(entries,WIDTH/2-100,20,ySpacing=10,type="beam")
+deleted = False
+handler.Exist = True
+exists = True
 
 
 clock = pygame.time.Clock()
-
+rects = []
+tbr = 0
 while run:
     FPS = 60
     clock.tick(FPS)
@@ -244,6 +353,22 @@ while run:
 
         if event.type == pygame.MOUSEBUTTONDOWN:
             pos = pygame.mouse.get_pos()
+            # deleting from downside
+            for ind,rct in enumerate(rects):
+                if rct[0]<=pos[0] and rct[0]+rct[2]>=pos[0]:
+                    if rct[1]<=pos[1] and rct[1]+rct[3]>=pos[1]:
+                        i = 0
+                        for subclass in objects:
+                            if len(objects[subclass])>0:
+                                for ii,object in enumerate(subclass):
+                                    if i==ind:
+                                        tbr = (ii, subclass)
+                                    i+=1
+            if tbr:
+                del objects[tbr[1]][tbr[0]]
+                tbr = 0
+
+
             if exists:
                 handler.HandleMouseDown(pos)
             for button in buttons:
@@ -251,7 +376,7 @@ while run:
                 if button.big:
                     if button.type == "fixed" or button.type == "pinned" or button.type == "roller" or button.type == "force" or button.type == "distload" or button.type == "moment":
                         entries= GetEntryFields(button.type,button.questions)
-                        handler = EntryHandler(entries,WIDTH/2-100,0,ySpacing=10,type=button.type)
+                        handler = EntryHandler(entries,WIDTH/2-100,20,ySpacing=10,type=button.type)
                         deleted = False
                         handler.Exist = True
                         exists = True
@@ -268,8 +393,10 @@ while run:
                 else:
                     if event.key == ButtonKeys[i][0]:
                         type = ButtonKeys[i][1]
+                        if i==7:
+                            i=6
                         entries= GetEntryFields(type,ButtonQuestions[i])
-                        handler = EntryHandler(entries,WIDTH/2-100,0,ySpacing=10,type=type)
+                        handler = EntryHandler(entries,WIDTH/2-100,20,ySpacing=10,type=type)
                         # handler = copy.deepcopy(handler)
                         deleted = False
                         handler.Exist = True
@@ -290,35 +417,62 @@ while run:
             type = handler.type
             Ans = handler.results
             if type == "fixed":
-                NewOb = Support("fixed",side=Ans[0])
-                objects["supports"].append(NewOb)   
-            elif type == "pinned":
-                NewOb = Support("pinned",float(Ans[0]))
-                objects["supports"].append(NewOb)
-            elif type == "roller":
-                NewOb = Support("roller",float(Ans[0]))
-                objects["supports"].append(NewOb)
+                if Ans[0]=="left" or Ans[0]=="right":
+                    NewOb = Support("fixed",side=Ans[0])
+                    objects["supports"].append(NewOb) 
+                else:
+                    DisplayErrorMessage(win,"Invalid entry")
+                    ### Add printing previous invalid results  
+            elif type == "pinned" or type=="roller":
+                try:
+                    if float(Ans[0])>=0 and float(Ans[0])<=beam_length:
+                        NewOb = Support(type,float(Ans[0]))
+                        objects["supports"].append(NewOb)
+                    else:
+                        DisplayErrorMessage(win,"Invalid entry")
+                except:
+                    pass
             elif type == "force":
-                NewOb = Force(float(Ans[0]),float(Ans[1]),float(Ans[2]))
-                objects["forces"].append(NewOb)
+                try:
+                    if float(Ans[0])>=0 and float(Ans[0])<=beam_length and float(Ans[1])>0:
+                        NewOb = Force(float(Ans[0]),float(Ans[1]),float(Ans[2]))
+                        objects["forces"].append(NewOb)
+                    else:
+                        DisplayErrorMessage(win,"Invalid entry")
+                except:
+                    pass
             elif type == "distload":
-                NewOb = Distload(float(Ans[1]),float(Ans[3]),float(Ans[2]),float(Ans[4]),str(Ans[0]))
-                objects["distloads"].append(NewOb)   
+                try:
+                    if str(Ans[0])=="up" or str(Ans[0])=="down" and float(Ans[1])>=0 and float(Ans[1])<=beam_length and float(Ans[3])>=0 and float(Ans[3])<=beam_length and float(Ans[2])>=0 and float(Ans[4])>=0 and float(Ans[1])<float(Ans[3]):
+                        NewOb = Distload(float(Ans[1]),float(Ans[3]),float(Ans[2]),float(Ans[4]),str(Ans[0]))
+                        objects["distloads"].append(NewOb) 
+                    else:
+                        DisplayErrorMessage(win,"Invalid entry")
+                except:
+                    pass  
             elif type == "moment":
-                NewOb = Moment(float(Ans[0]),float(Ans[1]))
-                objects["moments"].append(NewOb)   
+                try:
+                    if float(Ans[0])>=0 and float(Ans[0])<=beam_length:
+                        NewOb = Moment(float(Ans[0]),float(Ans[1]))
+                        objects["moments"].append(NewOb)  
+                    else:
+                        DisplayErrorMessage(win,"Invalid entry")
+                except:
+                    pass 
             elif type == "beam":
-                beam_length = Ans[0]
+                beam_length = float(Ans[0])
 
 
     pos = pygame.mouse.get_pos()
     for button in buttons:
         button.isHovering(pos)
-    sol = CalculateSupportReactions(objects)
+    if len(objects["supports"])>0:
+        sol = CalculateSupportReactions(objects)
+    else: sol=None
     if exists:
-        draw(win,objects,buttons,sol,handler,exists)
+        rects = draw(win,objects,buttons,sol,handler,exists,beam_length=beam_length)
     else:
-        draw(win,objects,buttons,sol)
+        rects = draw(win,objects,buttons,sol,beam_length=beam_length)
     
 pygame.quit()
 

@@ -15,21 +15,36 @@ def draw_moment(win,COLOR,posx,posy,width,dir,th):
         myfuncs.draw_arrow_tip(win,COLOR,posx+width/10,posy-width/16,math.pi/2.75,8)
 
 class Moment:
-    def __init__(self,x,mag):
+    def __init__(self,x,mag,demo=False,demoy =0):
+        self.demo = demo
+        self.demoy = demoy
         self.x = x
-        self.mappedx = myfuncs.map_value(x,0,beam_length,beam_left,beam_right)
         self.mag = mag
         self.set_dir()
         self.type = "moment"
+
+        if not self.demo:
+            self.mappedx = myfuncs.map_value(x,0,beam_length,beam_left,beam_right)
+            self.momentw = 40
+        else:
+            self.momentw = 30
+
         
     def set_dir(self):
         if self.mag>0:
             self.dir = "CCW"
         elif self.mag < 0:
             self.dir = "CW"
+            
+    def UpdateBeamLength(self,beam_length):
+        self.mappedx = myfuncs.map_value(self.x,0,beam_length,beam_left,beam_right)
 
-    def draw(self,win):
-        draw_moment(win,BLACK,self.mappedx,beam_y - 6* beam_height,momentw,self.dir,2)
+    def draw(self,win,beam_length):
+        if not self.demo:
+            self.UpdateBeamLength(beam_length)
+            draw_moment(win,BLACK,self.mappedx,beam_y - 6* beam_height,self.momentw,self.dir,2)
+        else:
+            draw_moment(win,BLACK,self.x,self.demoy-self.momentw/2,self.momentw,self.dir,2)
 
     def __eq__(self,other):
         return self.x == other.x and self.mag==other.mag

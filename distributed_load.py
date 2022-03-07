@@ -21,21 +21,41 @@ def draw_dist_load(win,COLOR,x,y,width,height,dir,startmag,endmag,maxmag):
 
 
 class Distload:
-    def __init__(self,startx,endx,startmag,endmag,dir):
+    def __init__(self,startx,endx,startmag,endmag,dir,demo=False,demoy=0):
+        self.demo = demo
         self.startx = startx
-        self.mappedstartx = myfuncs.map_value(startx,0,beam_length,beam_left,beam_right)
         self.endx = endx
-        self.mappedendx = myfuncs.map_value(endx,0,beam_length,beam_left,beam_right)
-        self.width = self.mappedendx - self.mappedstartx
         self.startmag = startmag
         self.endmag = endmag
+        self.h = 50
+        if not self.demo:
+            self.mappedstartx = myfuncs.map_value(startx,0,beam_length,beam_left,beam_right)
+            self.mappedendx = myfuncs.map_value(endx,0,beam_length,beam_left,beam_right)
+            self.width = self.mappedendx - self.mappedstartx
+            self.CalcEquivalent()
+        else:
+            self.width = self.endx - self.startx
+            self.demoy = demoy
+            self. h *= 0.5
+        
+
         self.dir = dir
         self.type = "distload"
-        self.CalcEquivalent()
+        
 
-    def draw(self,win):
+    def UpdateBeamLength(self,beam_length):
+        self.mappedstartx = myfuncs.map_value(self.startx,0,beam_length,beam_left,beam_right)
+        self.mappedendx = myfuncs.map_value(self.endx,0,beam_length,beam_left,beam_right)
+        self.width = self.mappedendx - self.mappedstartx
+
+    def draw(self,win,beam_length):
         maxmag = max(self.startmag,self.endmag)
-        draw_dist_load(win,BLACK,self.mappedstartx,beam_y,self.width,distload_h,self.dir,self.startmag,self.endmag,maxmag)
+        if not self.demo:
+            self.UpdateBeamLength(beam_length)
+            draw_dist_load(win,BLACK,self.mappedstartx,beam_y,self.width,self.h,self.dir,self.startmag,self.endmag,maxmag)
+        if self.demo:
+            draw_dist_load(win,BLACK,self.startx,self.demoy,self.width,self.h,self.dir,self.startmag,self.endmag,maxmag)
+        
     
     def CalcEquivalent(self):
         width = self.endx-self.startx
