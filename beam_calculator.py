@@ -63,6 +63,12 @@ def PrintTextatCenter(win,text_rect,text,font=mainfont,fontsize=15,color=(0,0,0)
     text_rect = text_sur.get_rect(center=(xc, yc))
     win.blit(text_sur,text_rect)
 
+def RemoveDuplicates(lst):
+    out_list = []
+    for val in lst:
+        if not val in out_list:
+            out_list.append(val)
+    return out_list
 
 def draw(win,objects,buttons,sol,handler=None,exists=False,beam_length=beam_length,offset=0):
     win.fill(WHITE)
@@ -356,6 +362,8 @@ clock = pygame.time.Clock()
 rects = []
 tbr = 0
 offset=0
+
+
 while run:
     FPS = 60
     clock.tick(FPS)
@@ -480,6 +488,11 @@ while run:
                     pass 
             elif type == "beam":
                 beam_length = float(Ans[0])
+    
+    for subclass in objects:
+        if len(objects[subclass])>1:
+            objects[subclass] = RemoveDuplicates(objects[subclass])
+
 
 
     pos = pygame.mouse.get_pos()

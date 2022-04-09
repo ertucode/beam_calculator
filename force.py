@@ -45,3 +45,6 @@ class Force:
 
     def __repr__(self):
         return self.__str__()
+
+    def __eq__(self,other):
+        return self.x == other.x and self.mag==other.mag and self.angle == other.angle

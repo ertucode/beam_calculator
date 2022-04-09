@@ -1,8 +1,6 @@
-from tkinter.ttk import Scale
 import pygame
 import math
 import copy
-import numpy as np
 
 def map_value(val,min1,max1,min2,max2):
     return (val-min1)*(max2-min2)/(max1-min1)+min2

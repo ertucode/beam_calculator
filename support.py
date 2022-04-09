@@ -113,8 +113,8 @@ class Support:
             else:
                 draw_fixed_sup(win,BLACK,self.mappedx            ,self.demoy,self.side,fixed_width/2,fixed_height/2,2)
     
-    # def __eq__(self,other):
-    #     return self.type==other.type and self.x==other.x and self.side==other.side
+    def __eq__(self,other):
+         return self.type==other.type and self.x==other.x and self.side==other.side
 
     def __str__(self):
         if self.type == "fixed":

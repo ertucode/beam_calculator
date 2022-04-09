@@ -33,6 +33,7 @@ class Distload:
             self.mappedendx = myfuncs.map_value(endx,0,beam_length,beam_left,beam_right)
             self.width = self.mappedendx - self.mappedstartx
             self.CalcEquivalent()
+            print(f"EqForce: {self.EqForce}, EqLoc: {self.EqLoc}")
         else:
             self.width = self.endx - self.startx
             self.demoy = demoy
@@ -62,15 +63,17 @@ class Distload:
         if self.startmag >= self.endmag:
             MaxLoad = self.startmag
             MinLoad = self.endmag
-            TriLoc = self.startx + width / 3
+            TriLoc = width / 3
         else:
             MaxLoad = self.endmag
             MinLoad = self.startmag
-            TriLoc = self.endx - width / 3       
+            TriLoc = 2 * width / 3       
         RectForce = MinLoad * width
         TriForce = (MaxLoad - MinLoad) * width / 2
         self.EqForce = RectForce + TriForce
         self.EqLoc = (RectForce*width/2+TriForce*TriLoc)/self.EqForce
+        self.EqLoc = self.startx + self.EqLoc
+        
 
     def __eq__(self,other):
         return self.startx==other.startx and self.endx==other.endx and self.startmag==other.startmag and self.endmag==other.endmag and self.dir==other.dir
