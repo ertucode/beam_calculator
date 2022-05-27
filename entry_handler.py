@@ -1,5 +1,5 @@
 import pygame
-from myfuncs import ScaleRect
+from myfuncs import scale_rect
 from myfuncs import draw_arrow as DrawArrow
 from vars import WIDTH
 from numpy import arange
@@ -7,10 +7,10 @@ from math import sqrt
 
 
 
-from force import Force
-from support import Support
-from distributed_load import Distload
-from moment import Moment
+from components.force import Force
+from components.support import Support
+from components.distributed_load import Distload
+from components.moment import Moment
 from button import Button
 from vars import fixed_height
 
@@ -32,8 +32,8 @@ def draw_dashed_line(surf, color, start_pos, end_pos, width=1, dash_length=10):
         dx = dl * a / c
         dy = dl * b / c
 
-        xcoords = [x for x in arange(x1, x2, dx if x1 < x2 else -dx)]
-        ycoords = [y for y in arange(y1, y2, dy if y1 < y2 else -dy)]
+        xcoords = [x for x in range(x1, x2, dx if x1 < x2 else -dx)]
+        ycoords = [y for y in range(y1, y2, dy if y1 < y2 else -dy)]
 
     next_coords = list(zip(xcoords[1::2], ycoords[1::2]))
     last_coords = list(zip(xcoords[0::2], ycoords[0::2]))
@@ -52,7 +52,7 @@ class EntryHandler:
         self.Exist = Exist
         self.results = None
         self.type = type
-        self.arrowimg = pygame.image.load("arroww.png")
+        self.arrowimg = pygame.image.load("images/arrow.png")
         ### change font with a press
 
     def DrawPrompts(self,win):
@@ -62,7 +62,7 @@ class EntryHandler:
                     text_rect = pygame.Rect(self.x,self.y+i*(self.ySpacing+self.entries[i-1].height),entry.PromptWidth,entry.height)
                 else:
                     text_rect = pygame.Rect(self.x,self.y,entry.PromptWidth,entry.height)
-                text_rect = ScaleRect(text_rect,0.95)
+                text_rect = scale_rect(text_rect,0.95)
                 myfont = pygame.font.SysFont(entry.font,entry.fontsize)
                 text_sur = myfont.render(entry.PromptText,True,entry.PromptTextColor)
                 win.blit(text_sur,text_rect)
@@ -79,7 +79,7 @@ class EntryHandler:
                     text_rect = pygame.Rect(self.x+entry.PromptWidth,self.y+i*(self.ySpacing+entry.height),entry.InputWidth,entry.height)
                 else:
                     text_rect = pygame.Rect(self.x+entry.PromptWidth,self.y,entry.InputWidth,entry.height)
-                text_rect = ScaleRect(text_rect,0.95)
+                text_rect = scale_rect(text_rect,0.95)
                 myfont = pygame.font.SysFont(entry.font,entry.fontsize)
                 text_sur = myfont.render(entry.InputText,True,entry.InputTextColor)
                 win.blit(text_sur,text_rect)

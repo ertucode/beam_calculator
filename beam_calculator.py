@@ -4,15 +4,16 @@ from entry_handler import draw_dashed_line
 from time import sleep
 
 from math import pi, sin,cos
-from force import Force
-from support import Support
-from distributed_load import Distload
-from moment import Moment
+from components import Component, Demo
+from components.force import Force, DemoForce
+from components.support import Support, FixedSupport, PinnedSupport, RollerSupport, DemoFixedSupport, DemoPinnedSupport, DemoRollerSupport
+from components.distributed_load import Distload, DemoDistload
+from components.moment import Moment, DemoMoment
 from button import Button
 
 from entry import Entry
 from entry_handler import EntryHandler
-from numpy import AxisError, array, linalg
+from numpy import array, linalg
 import numpy as np
 import myfuncs
 import copy
@@ -23,8 +24,15 @@ from vars import beam_left, beam_right, beam_mid, beam_length, beam_height,\
      beam_below,beam_y,WIDTH,HEIGHT,BLACK,WHITE,ButtonKeys,ButtonQuestions,ButtonTexts,\
          ButtonFont, ButtonFontSize, ButtonWidth, ButtonX, ButtonHeight, ButtonYStart, ButtonYInc
 
+objects = {
+    "supports": [],
+    "forces": [],
+    "distloads": [],
+    "moments": []
+}
 
-imgpath = "button1.png"
+
+imgpath = "images/button.png"
 pygame.init()
 
 win = pygame.display.set_mode((WIDTH, FULLHEIGHT))
@@ -56,23 +64,38 @@ def PrintTextatCenter(win,text_rect,text,font=mainfont,fontsize=15,color=(0,0,0)
     text_rect = text_sur.get_rect(center=(xc, yc))
     win.blit(text_sur,text_rect)
 
+def RemoveDuplicates(lst):
+    out_list = []
+    for val in lst:
+        if not val in out_list:
+            out_list.append(val)
+    return out_list
 
-def draw(win,objects,buttons,sol,handler=None,exists=False,beam_length=beam_length):
+def draw(win,objects,buttons,sol,handler=None,exists=False,beam_length=beam_length,offset=0):
     win.fill(WHITE)
-    myfuncs.draw_at_center(win,(173,216,230),beam_mid,beam_y,beam_right-beam_left,beam_height,0)
-    myfuncs.draw_at_center(win,BLACK,beam_mid,beam_y,beam_right-beam_left,beam_height,1)
+    myfuncs.draw_rect_at_center(win,(173,216,230),beam_mid,beam_y,beam_right-beam_left,beam_height,0)
+    myfuncs.draw_rect_at_center(win,BLACK,beam_mid,beam_y,beam_right-beam_left,beam_height,1)
 
-    if not sol:
-        #pygame.draw.circle(win,(255,0,0),(WIDTH/2,20),10)
-        text_rect = pygame.Rect(WIDTH/2-50,HEIGHT-50,100,20)
-        myfont = pygame.font.SysFont(mainfont,12)
-        text_sur = myfont.render("The system has no solution",True,BLACK)
-        win.blit(text_sur,text_rect)
+
     
     PrintText(win,ButtonX,15,f"Beam length: {beam_length} m")
+    for subclass in objects:
+        if len(objects[subclass])>0:
+            text = u"Click to delete \u21e9"
+            PrintText(win,ButtonX,HEIGHT-45,text,font="cambria")
+            
+            break
 
-    rects = ShowObjects(win,objects,(20,HEIGHT - 20),20,100,FULLHEIGHT-HEIGHT+10,(220,220,255))
-    
+    rects = ShowObjects(win,objects,(20,HEIGHT - 20),20,100,FULLHEIGHT-HEIGHT+10,(220,220,255),offset)
+    if not sol:
+        if len(rects) > 0:
+            text_rect = pygame.Rect(WIDTH/2-50,HEIGHT-50,100,20)
+            myfont = pygame.font.SysFont(mainfont,12)
+            text_sur = myfont.render("The system has no solution",True,(255,0,0))
+            win.blit(text_sur,text_rect)
+
+    if len(rects)>8:
+        PrintText(win,WIDTH - 270 ,HEIGHT-45,f"Use arrow keys to access later objects")
     if exists:
         handler.draw(win)
 
@@ -87,37 +110,36 @@ def draw(win,objects,buttons,sol,handler=None,exists=False,beam_length=beam_leng
     pygame.display.update()
     return rects
 
-
-objects = {
-    "supports": [],
-    "forces": [],
-    "distloads": [],
-    "moments": []
-}
-
-def DrawDemoOutline(win,outlinecolor,orect):
+def draw_dashed_outline(win,outlinecolor,orect):
     draw_dashed_line(win,outlinecolor,orect.topright,orect.topleft,2)
     draw_dashed_line(win,outlinecolor,orect.bottomleft,orect.bottomright,2)
     draw_dashed_line(win,outlinecolor,orect.topleft,orect.bottomleft,2)
     draw_dashed_line(win,outlinecolor,orect.bottomright,orect.topright,2)
 
-def ShowObjects(win,objects,startpos,xoff,width,height,outlinecolor):
+
+txth = 15
+def print_demo_data(datas, orect, width, height):
+    for ind,data in enumerate(datas):
+        text_rect = orect.x,orect.y+ind*txth,width,height
+        PrintTextatCenter(win,text_rect,data,font="javanesetext",fontsize=14)
+
+def ShowObjects(win,objects,startpos,xoff,width,height,outlinecolor,offset):
     rects = []
     i = 0
-    x = startpos[0]
+    x = startpos[0] + offset*width
     y = startpos[1]
-    txth = 15
     
     for subclass in objects:
         for object in objects[subclass]:
             orect = pygame.Rect(x+i*(width+xoff),y,width,height)
             rects.append(orect)
             i += 1
-            if object.type == "fixed" or object.type == "pinned" or object.type == "roller" or object.type == "force" or object.type == "distload" or object.type == "moment":
-                DrawDemoOutline(win,outlinecolor,orect)
-            if object.type == "fixed":
+            if isinstance(object, Component):
+                draw_dashed_outline(win,outlinecolor,orect)
+            if isinstance(FixedSupport):
                 demo = Support("fixed",side=object.side,demo=True,demox = orect.centerx,demoy = orect.centery - height/4 - 30)
                 datas = (f"type = {demo.type}",f"side = {demo.side}")
+                print_demo_data(datas, orect, width, height)
                 for ind,data in enumerate(datas):
                     text_rect = orect.x,orect.y+ind*txth,width,height
                     PrintTextatCenter(win,text_rect,data,font="javanesetext",fontsize=14)
@@ -219,7 +241,8 @@ def CalculateSupportReactions(objects):
     nmat = array(rows)
     cons = array(rrow)
 
-    objects["forces"] = myfuncs.RemoveLastN(objects["forces"],distcount)
+    objects["forces"] = objects["forces"][:-distcount or None]
+    
     
     if nmat.shape[0] == nmat.shape[1]:
         if linalg.det(nmat) != 0:
@@ -294,6 +317,19 @@ def PlotDiagrams(objects,beam_length):
     subplot[1].axhline(y=0, color='r', linestyle='--')
     plt.xlim([0,beam_length])
     plt.show()
+
+def CheckCollisionAtBottom(objects,rects):
+    for ind,rct in enumerate(rects):
+        if rct[0]<=pos[0] and rct[0]+rct[2]>=pos[0]:
+            if rct[1]<=pos[1] and rct[1]+rct[3]>=pos[1]:
+                i = 0
+                for subclass in objects:
+                    if len(objects[subclass])>0:
+                        for ii,object in enumerate(objects[subclass]):
+                            if i==ind:
+                                return (ii, subclass)
+                            i+=1
+
         
 def GetEntryFields(type,questions):
     entries = []
@@ -331,6 +367,9 @@ exists = True
 clock = pygame.time.Clock()
 rects = []
 tbr = 0
+offset=0
+
+
 while run:
     FPS = 60
     clock.tick(FPS)
@@ -354,16 +393,7 @@ while run:
         if event.type == pygame.MOUSEBUTTONDOWN:
             pos = pygame.mouse.get_pos()
             # deleting from downside
-            for ind,rct in enumerate(rects):
-                if rct[0]<=pos[0] and rct[0]+rct[2]>=pos[0]:
-                    if rct[1]<=pos[1] and rct[1]+rct[3]>=pos[1]:
-                        i = 0
-                        for subclass in objects:
-                            if len(objects[subclass])>0:
-                                for ii,object in enumerate(subclass):
-                                    if i==ind:
-                                        tbr = (ii, subclass)
-                                    i+=1
+            tbr = CheckCollisionAtBottom(objects,rects)
             if tbr:
                 del objects[tbr[1]][tbr[0]]
                 tbr = 0
@@ -386,6 +416,13 @@ while run:
         if event.type == pygame.KEYDOWN:
             if exists:
                 handler.HandleKeyInputs(event.key)
+            if len(rects)>8:
+                if event.key == pygame.K_RIGHT:
+                    if offset > 6-len(rects):
+                        offset -= 1
+                elif event.key == pygame.K_LEFT:
+                    if offset != 0:
+                        offset +=1
             for i,keys in enumerate(ButtonKeys):
                 if i==6:
                     if event.key == ButtonKeys[i][0]:
@@ -403,11 +440,7 @@ while run:
                         exists = True
             
             if event.key == pygame.K_ASTERISK:
-                # handler = copy.deepcopy(pocket)
-                # deleted = False
-                # handler.Exist = True
-                # exists = True
-                pass
+                print(objects)
             else:
                 if exists: 
                     handler.TypeToActive(event)
@@ -461,6 +494,11 @@ while run:
                     pass 
             elif type == "beam":
                 beam_length = float(Ans[0])
+    
+    for subclass in objects:
+        if len(objects[subclass])>1:
+            objects[subclass] = RemoveDuplicates(objects[subclass])
+
 
 
     pos = pygame.mouse.get_pos()
@@ -470,9 +508,9 @@ while run:
         sol = CalculateSupportReactions(objects)
     else: sol=None
     if exists:
-        rects = draw(win,objects,buttons,sol,handler,exists,beam_length=beam_length)
+        rects = draw(win,objects,buttons,sol,handler,exists,beam_length=beam_length,offset=offset)
     else:
-        rects = draw(win,objects,buttons,sol,beam_length=beam_length)
+        rects = draw(win,objects,buttons,sol,beam_length=beam_length,offset=offset)
     
 pygame.quit()
 

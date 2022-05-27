@@ -1,13 +1,11 @@
-from tkinter.ttk import Scale
 import pygame
 import math
 import copy
-import numpy as np
 
 def map_value(val,min1,max1,min2,max2):
     return (val-min1)*(max2-min2)/(max1-min1)+min2
 
-def draw_at_center(win,COLOR,center_x,center_y,width,height,th):
+def draw_rect_at_center(win,COLOR,center_x,center_y,width,height,th):
     x = center_x - width/2
     y = center_y - height/2
     pygame.draw.rect(win,COLOR,(x,y,width,height),th)
@@ -43,7 +41,7 @@ def DrawButton(win,BUTTONCOLOR,x,y,width,height,th,text,TEXTCOLOR,FontType,FontS
     win.blit(TextRender,TextRect)
 
 def DrawButtonImg(win,BUTTONCOLOR,x,y,width,height,th,text,TEXTCOLOR,FontType,FontSize):
-    ButtonImg = pygame.image.load("buttonn.png")
+    ButtonImg = pygame.image.load("images/button.png")
     x = x - width / 2
     y = y - height / 2
     ButtonRect = pygame.Rect(x,y,width,height)
@@ -54,26 +52,43 @@ def DrawButtonImg(win,BUTTONCOLOR,x,y,width,height,th,text,TEXTCOLOR,FontType,Fo
     TextRect.y = TextRect.y + 10
     win.blit(TextRender,TextRect)
 
-def PrintMatrix(matrix):
-    print('\n'.join(['\t'.join([str(cell) for cell in row]) for row in matrix]))
-
-def Others(lst,item):
-    list2 = lst
-    list2.remove(item)
-    return list2
-
-def RemoveLastN(lst,n):
-    lst = lst[:-n or None]
-    return lst
-
-def CopyDict(dict):
-    dict2 = copy.deepcopy(dict)
-    return dict2
-
-def ScaleRect(rect,ScaleFactor):
+def scale_rect(rect,ScaleFactor):
     center = rect.center
     rect.w = rect.w*ScaleFactor
     rect.h = rect.h*ScaleFactor
     rect.center = center
     return rect
 
+def draw_dashed_line(surf, color, start_pos, end_pos, width=1, dash_length=10):
+    x1, y1 = start_pos
+    x2, y2 = end_pos
+    dl = dash_length
+
+    if (x1 == x2):
+        ycoords = [y for y in range(y1, y2, dl if y1 < y2 else -dl)]
+        xcoords = [x1] * len(ycoords)
+    elif (y1 == y2):
+        xcoords = [x for x in range(x1, x2, dl if x1 < x2 else -dl)]
+        ycoords = [y1] * len(xcoords)
+    else:
+        a = abs(x2 - x1)
+        b = abs(y2 - y1)
+        c = round(math.sqrt(a**2 + b**2))
+        dx = dl * a / c
+        dy = dl * b / c
+
+        xcoords = [x for x in range(x1, x2, dx if x1 < x2 else -dx)]
+        ycoords = [y for y in range(y1, y2, dy if y1 < y2 else -dy)]
+
+    next_coords = list(zip(xcoords[1::2], ycoords[1::2]))
+    last_coords = list(zip(xcoords[0::2], ycoords[0::2]))
+    for (x1, y1), (x2, y2) in zip(next_coords, last_coords):
+        start = (round(x1), round(y1))
+        end = (round(x2), round(y2))
+        pygame.draw.line(surf, color, start, end, width)
+
+def DrawDemoOutline(win,outlinecolor,orect):
+    draw_dashed_line(win,outlinecolor,orect.topright,orect.topleft,2)
+    draw_dashed_line(win,outlinecolor,orect.bottomleft,orect.bottomright,2)
+    draw_dashed_line(win,outlinecolor,orect.topleft,orect.bottomleft,2)
+    draw_dashed_line(win,outlinecolor,orect.bottomright,orect.topright,2)
