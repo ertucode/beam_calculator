@@ -6,21 +6,19 @@ BLACK = (0,0,0)
 FULLHEIGHT = HEIGHT + 200
 
 
-beam_left = 400
-beam_right = WIDTH-100
-beam_mid = (beam_right+beam_left)/2
+BEAM_LEFT = 400
+BEAM_RIGHT = WIDTH-100
+BEAM_MID = (BEAM_RIGHT+BEAM_LEFT)/2
 beam_length = 11
-beam_height = 15
-sup_height = 35
-beam_y = 5* HEIGHT / 8
-beam_below = beam_y + beam_height / 2
-tırtık_height = 5
-tırtık_count = 6
-forcelen = 75
-momentw = 30
-fixed_width = 10
-fixed_height = 100
-distload_h = 50
+BEAM_HEIGHT = 15
+BEAM_TOP = 5* HEIGHT / 8
+BEAM_BOTTOM = BEAM_TOP + BEAM_HEIGHT / 2
+
+
+
+
+
+
 
 ButtonKeys = ([K_F1,"fixed"]
             ,[K_F2,"pinned"]
@@ -64,6 +62,6 @@ ButtonYInc = (((ButtonYEnd - ButtonYStart) - NOfButtons * ButtonHeight) / (NOfBu
 #allfonts = (os.listdir(r'C:\Windows\fonts'))
 #allfonts = (font.get_fonts())
 
-
+UIX = 50
 
 

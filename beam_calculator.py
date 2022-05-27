@@ -1,5 +1,5 @@
 import pygame
-from vars import mainfont, FULLHEIGHT, sup_height
+from vars import mainfont, FULLHEIGHT, SUPPORT_SIZE
 from entry_handler import draw_dashed_line
 from time import sleep
 
@@ -20,8 +20,8 @@ import copy
 import matplotlib.pyplot as plt
 
 
-from vars import beam_left, beam_right, beam_mid, beam_length, beam_height,\
-     beam_below,beam_y,WIDTH,HEIGHT,BLACK,WHITE,ButtonKeys,ButtonQuestions,ButtonTexts,\
+from vars import BEAM_LEFT, BEAM_RIGHT, BEAM_MID, beam_length, BEAM_HEIGHT,\
+     BEAM_BOTTOM,BEAM_TOP,WIDTH,HEIGHT,BLACK,WHITE,ButtonKeys,ButtonQuestions,ButtonTexts,\
          ButtonFont, ButtonFontSize, ButtonWidth, ButtonX, ButtonHeight, ButtonYStart, ButtonYInc
 
 objects = {
@@ -73,8 +73,8 @@ def RemoveDuplicates(lst):
 
 def draw(win,objects,buttons,sol,handler=None,exists=False,beam_length=beam_length,offset=0):
     win.fill(WHITE)
-    myfuncs.draw_rect_at_center(win,(173,216,230),beam_mid,beam_y,beam_right-beam_left,beam_height,0)
-    myfuncs.draw_rect_at_center(win,BLACK,beam_mid,beam_y,beam_right-beam_left,beam_height,1)
+    myfuncs.draw_rect_at_center(win,(173,216,230),BEAM_MID,BEAM_TOP,BEAM_RIGHT-BEAM_LEFT,BEAM_HEIGHT,0)
+    myfuncs.draw_rect_at_center(win,BLACK,BEAM_MID,BEAM_TOP,BEAM_RIGHT-BEAM_LEFT,BEAM_HEIGHT,1)
 
 
     
@@ -145,7 +145,7 @@ def ShowObjects(win,objects,startpos,xoff,width,height,outlinecolor,offset):
                     PrintTextatCenter(win,text_rect,data,font="javanesetext",fontsize=14)
 
             elif object.type == "pinned" or object.type == "roller":
-                demo = Support(object.type,x=object.x,demo=True,demox = orect.centerx,demoy = orect.top + sup_height - 20)
+                demo = Support(object.type,x=object.x,demo=True,demox = orect.centerx,demoy = orect.top + SUPPORT_SIZE - 20)
                 datas = (f"type = {demo.type}",f"x = {demo.x}")
                 for ind,data in enumerate(datas):
                     text_rect = orect.x,orect.y+ind*txth,width,height

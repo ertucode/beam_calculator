@@ -1,8 +1,7 @@
 
-from __init__ import *
+from components import *
 
-from vars import beam_left, beam_right, beam_mid, beam_length, \
-    beam_height, beam_below,beam_y,WIDTH,HEIGHT,BLACK,forcelen,distload_h
+from vars import BEAM_LEFT, BEAM_RIGHT, BEAM_TOP
 
 def draw_dist_load(win,COLOR,x,y,width,height,dir,startmag,endmag,maxmag):
     space = 15
@@ -22,7 +21,7 @@ def draw_dist_load(win,COLOR,x,y,width,height,dir,startmag,endmag,maxmag):
 
 class Distload(Component):
     HEIGHT = 50
-    def __init__(self,startx,endx,startmag,endmag,direction):
+    def __init__(self,startx,endx,startmag,endmag,direction,beam_length):
         self.startx = startx
         self.endx = endx
 
@@ -34,16 +33,34 @@ class Distload(Component):
         self.calculate_equivalent_quantiies()
 
         self.direction = direction
-        self.type = "distload"
+
+        self.setup_demo()
+    
+    def setup_demo(self):
+        self.demo_surface = pygame.Surface.copy(Demo.DEMO_SURFACE)
+        rect = self.demo_surface.get_rect()
+        XOFF = 10
+        if self.direction == "down":
+            y = rect.top + self.HEIGHT
+        elif self.direction == "up":
+            y = rect.top + self.HEIGHT * 0.5
+        startx = rect.left + XOFF
+        width = rect.right - 2 * XOFF
+        draw_dist_load(self.demo_surface,"black",startx,y,width,self.HEIGHT * 0.5,self.direction,self.startmag,self.endmag,self.maxmag)
+        print_demo_data(self.demo_surface, ("Distributed L.", f"Dir = {self.direction}",f"x_i = {self.startx}",f"x_f = {self.endx}",f"Mag_i = {self.startmag}",f"Mag_f = {self.endmag}"),
+                 rect, Demo.OUTLINE_WIDTH, Demo.OUTLINE_HEIGHT)
+
+    def draw_demo(self, surface, point):
+        surface.blit(self.demo_surface, point)  
+
 
     def set_location_according_to_beam_length(self,beam_length):
-        self.mappedstartx = map_value(self.startx,0,beam_length,beam_left,beam_right)
-        self.mappedendx = map_value(self.endx,0,beam_length,beam_left,beam_right)
+        self.mappedstartx = map_value(self.startx,0,beam_length,BEAM_LEFT,BEAM_RIGHT)
+        self.mappedendx = map_value(self.endx,0,beam_length,BEAM_LEFT,BEAM_RIGHT)
         self.width = self.mappedendx - self.mappedstartx
 
-    def draw(self,win,beam_length):
-        draw_dist_load(win,BLACK,self.mappedstartx,beam_y,self.width,self.HEIGHT,self.direction,self.startmag,self.endmag,self.maxmag)
-        
+    def draw(self,win):
+        draw_dist_load(win,"black",self.mappedstartx,BEAM_TOP,self.width,self.HEIGHT,self.direction,self.startmag,self.endmag,self.maxmag)
     
     def calculate_equivalent_quantiies(self):
         width = self.endx-self.startx
@@ -67,22 +84,3 @@ class Distload(Component):
     def __repr__(self):
         return f"DistributedLoad, Start/End: {self.startx}/{self.endx}, Magnitudes: {self.startmag},{self.endmag}, Direction: {self.direction}"
 
-class DistloadDemo(Demo):
-    HEIGHT = 25
-    def __init__(self, startx, endx, startmag, endmag, locy, direction, datas):
-        self.startx = startx
-        self.endx = endx
-        self.startmag = startmag
-        self.endmag = endmag
-        self.maxmag = max(self.startmag, self.endmag)
-        
-        self.width = self.endx - self.startx
-        self.showy = locy
-
-        self.direction = direction
-
-    def draw(self,win,beam_length):
-        draw_dist_load(win,BLACK,self.startx,self.showy,self.width,self.HEIGHT,self.direction,self.startmag,self.endmag,self.maxmag)
-
-    def __repr__(self):
-        return "demo-distload: " + self.datas

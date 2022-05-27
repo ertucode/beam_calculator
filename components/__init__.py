@@ -1,8 +1,24 @@
 import pygame
 import math
+from vars import HEIGHT, FULLHEIGHT
+import ui
 
-class Demo: pass
+def init_demo(width, height):
+    OUTLINE_COLOR = (220,220,255)
+    DEMO_SURFACE = pygame.Surface((width + 5, height + 5))
+    DEMO_SURFACE.fill("white")
+    ui.draw_dashed_outline(DEMO_SURFACE, OUTLINE_COLOR, pygame.Rect(0, 0, width, height))
+    return DEMO_SURFACE
+
+class Demo:
+    OUTLINE_WIDTH = 100
+    OUTLINE_HEIGHT = FULLHEIGHT - HEIGHT + 10
+    DEMO_SURFACE = init_demo(OUTLINE_WIDTH, OUTLINE_HEIGHT)
+
 class Component: pass
+
+TIRTIK_HEIGHT = 5
+TIRTIK_COUNT = 6
 
 def map_value(val,min1,max1,min2,max2):
     return (val-min1)*(max2-min2)/(max1-min1)+min2
@@ -18,3 +34,11 @@ def draw_arrow(win,COLOR,startpos,endpos,th):
     end2 = (endpos[0]+math.cos(tip2_ang)*arrow_len,endpos[1]+math.sin(tip2_ang)*arrow_len)
     pygame.draw.line(win,COLOR,endpos,end1,th)
     pygame.draw.line(win,COLOR,endpos,end2,th)
+
+
+
+TEXT_YOFFSET = 15
+def print_demo_data(surf, datas, orect, width, height):
+    for ind,data in enumerate(datas):
+        text_rect = orect.x,orect.y+ind*TEXT_YOFFSET,width,height
+        ui.print_text_at_center(surf,text_rect,data,font="javanesetext",fontsize=14)

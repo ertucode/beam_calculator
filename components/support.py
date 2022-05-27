@@ -1,8 +1,7 @@
-from __init__ import * 
-from vars import beam_left, beam_right, beam_mid, beam_length,\
-beam_height, beam_below,beam_y,WIDTH,HEIGHT,BLACK,tırtık_height,\
-tırtık_count,sup_height, fixed_width, fixed_height
+from components import * 
+from vars import BEAM_LEFT, BEAM_RIGHT, BEAM_BOTTOM, BEAM_TOP
     
+SUPPORT_SIZE = 35
 
 def draw_circles(win,COLOR,x,y,width,radius,th):
     count = math.floor(width / radius /2)
@@ -10,7 +9,6 @@ def draw_circles(win,COLOR,x,y,width,radius,th):
     center1y = y + radius
     for i in range(count):
         pygame.draw.circle(win,COLOR,(center1x+i*2.15*radius,center1y),radius,th)
-
 
 class Support(Component):
     @staticmethod
@@ -36,10 +34,10 @@ class Support(Component):
                 offset = i*inc
                 pygame.draw.line(win,COLOR,(firstx1,firsty1+offset),(firstx2,firsty2+offset),th)
 
-class Demo:pass
-
 class FixedSupport(Support):
-    def __init__(self,side):
+    DRAW_WIDTH = 10
+    DRAW_HEIGHT = 100
+    def __init__(self,side,beam_length):
         self.side = side
         
         self.set_location_according_to_beam_length(beam_length)
@@ -47,19 +45,34 @@ class FixedSupport(Support):
         self.reaction_force = "Not Calculated"
         self.reaction_moment = "Not Calculated"
 
+        self.setup_demo()
+    
+    def setup_demo(self):
+        draw_width = self.DRAW_WIDTH * 0.5
+        draw_height = self.DRAW_HEIGHT * 0.5
+
+        self.demo_surface = pygame.Surface.copy(Demo.DEMO_SURFACE)
+        rect = self.demo_surface.get_rect()
+        FixedSupport.draw_fixed_sup(self.demo_surface, "black", rect.centerx, rect.centery - Demo.OUTLINE_HEIGHT * 0.25 - 30, self.side, draw_width, draw_height, 2)   
+        print_demo_data(self.demo_surface, ("Fixed", self.side), rect, Demo.OUTLINE_WIDTH, Demo.OUTLINE_HEIGHT)
+
+    def draw_demo(self, surface, point):
+        surface.blit(self.demo_surface, point)
+
     def set_location_according_to_beam_length(self,beam_length):
         if self.side == "left":
             self.x = 0
-            self.mappedx = beam_left
+            self.mappedx = BEAM_LEFT
         elif self.side == "right":
             self.x = beam_length
-            self.mappedx = beam_right
+            self.mappedx = BEAM_RIGHT
 
     def draw(self,win):
         if self.side == "left":
-            self.draw_fixed_sup(win,BLACK,self.mappedx-fixed_width,beam_y - fixed_height/2,self.side,fixed_width,fixed_height,2)
+            self.draw_fixed_sup(win,"black",self.mappedx-self.DRAW_WIDTH,BEAM_TOP - self.DRAW_HEIGHT/2,self.side,self.DRAW_WIDTH,self.DRAW_HEIGHT,2)
         elif self.side == "right":
-            self.draw_fixed_sup(win,BLACK,self.mappedx            ,beam_y - fixed_height/2,self.side,fixed_width,fixed_height,2)
+            self.draw_fixed_sup(win,"black",self.mappedx            ,BEAM_TOP - self.DRAW_HEIGHT/2,self.side,self.DRAW_WIDTH,self.DRAW_HEIGHT,2)
+        
 
     @staticmethod
     def draw_fixed_sup(win,COLOR,x,y,side,width,height,th):
@@ -85,20 +98,35 @@ class PointSupport(Support):
     def draw(self, win):
         pygame.draw.lines(win,"black",True,self.points,2)
 
-
 class PinnedSupport(PointSupport):
-    def __init__(self, x):
-        super.__init__(x)
+    def __init__(self, x,beam_length):
+        super().__init__(x)
         self.set_location_according_to_beam_length(beam_length)
+
+        self.setup_demo()
     
+    def setup_demo(self):
+
+        self.demo_surface = pygame.Surface.copy(Demo.DEMO_SURFACE)
+        rect = self.demo_surface.get_rect()
+        
+        x, y, width, height = rect.centerx, rect.top + SUPPORT_SIZE - 20, SUPPORT_SIZE, SUPPORT_SIZE
+        points = ((x,y),(x - width /2,y + height),(x + width /2,y + height))
+        pygame.draw.lines(self.demo_surface, "black", True, points, 2)
+        self.draw_tırtık(self.demo_surface,"black","down",*points[1],SUPPORT_SIZE,TIRTIK_HEIGHT,TIRTIK_COUNT,2)
+        print_demo_data(self.demo_surface, ("Pinned", f"{self.x} m"), rect, Demo.OUTLINE_WIDTH, Demo.OUTLINE_HEIGHT)
+    
+    def draw_demo(self, surface, point):
+        surface.blit(self.demo_surface, point)
+
     def set_location_according_to_beam_length(self, beam_length):
-        self.mappedx = map_value(self.x,0,beam_length,beam_left,beam_right)
-        x, y, width, height = self.mappedx, beam_below, sup_height, sup_height
+        self.mappedx = map_value(self.x,0,beam_length,BEAM_LEFT,BEAM_RIGHT)
+        x, y, width, height = self.mappedx, BEAM_BOTTOM, SUPPORT_SIZE, SUPPORT_SIZE
         self.points = ((x,y),(x - width /2,y + height),(x + width /2,y + height))
 
     def draw(self, win):
         super().draw(win)
-        self.draw_tırtık(win,"black","down",*self.points[1],sup_height,tırtık_height,tırtık_count,2)
+        self.draw_tırtık(win,"black","down",*self.points[1],SUPPORT_SIZE,TIRTIK_HEIGHT,TIRTIK_COUNT,2)
 
     def __repr__(self):
         return f"|Support Type: pinned, Location: {self.x}, Reaction Force: {self.ReactionForce}|"
@@ -107,23 +135,41 @@ class PinnedSupport(PointSupport):
         return isinstance(other, FixedSupport) and self.x == other.x
 
 class RollerSupport(PointSupport):
-    def __init__(self, x):
-        super.__init__(x)
+    def __init__(self, x,beam_length):
+        super().__init__(x)
         self.set_location_according_to_beam_length(beam_length)
+
+        self.setup_demo()
+    
+    def setup_demo(self):
+        self.demo_surface = pygame.Surface.copy(Demo.DEMO_SURFACE)
+        rect = self.demo_surface.get_rect()
+        
+        x, y, width, height = rect.centerx, rect.top + SUPPORT_SIZE - 20, SUPPORT_SIZE, SUPPORT_SIZE * 0.8
+        radius = 0.1 * SUPPORT_SIZE
+        points = ((x,y),(x - width /2,y + height),(x + width /2,y + height))
+        tırtık_locy = y+height+1.9*radius
+        pygame.draw.lines(self.demo_surface, "black", True, points, 2)
+        draw_circles(self.demo_surface,"black",*points[1],SUPPORT_SIZE,radius,2)
+        self.draw_tırtık(self.demo_surface,"black","down",points[1][0],tırtık_locy,SUPPORT_SIZE,TIRTIK_HEIGHT,TIRTIK_COUNT,2)
+        print_demo_data(self.demo_surface, ("Roller", f"{self.x} m"), rect, Demo.OUTLINE_WIDTH, Demo.OUTLINE_HEIGHT)
+    
+    def draw_demo(self, surface, point):
+        surface.blit(self.demo_surface, point)        
     
     def set_location_according_to_beam_length(self, beam_length):
-        self.mappedx = map_value(self.x,0,beam_length,beam_left,beam_right)
+        self.mappedx = map_value(self.x,0,beam_length,BEAM_LEFT,BEAM_RIGHT)
 
         # Setting up draw variables
-        x, y, width, height = self.mappedx, beam_below, sup_height, sup_height * 0.8
-        self.radius = 0.1 * sup_height
+        x, y, width, height = self.mappedx, BEAM_BOTTOM, SUPPORT_SIZE, SUPPORT_SIZE * 0.8
+        self.radius = 0.1 * SUPPORT_SIZE
         self.points = ((x,y),(x - width /2,y + height),(x + width /2,y + height))
         self.tırtık_locy = y+height+1.9*self.radius
 
     def draw(self, win):
         super().draw(win)
-        draw_circles(win,"black",*self.points[1],sup_height,self.radius,2)
-        self.draw_tırtık(win,"black","down",self.points[1][0],self.tırtık_locy,sup_height,tırtık_height,tırtık_count,2)
+        draw_circles(win,"black",*self.points[1],SUPPORT_SIZE,self.radius,2)
+        self.draw_tırtık(win,"black","down",self.points[1][0],self.tırtık_locy,SUPPORT_SIZE,TIRTIK_HEIGHT,TIRTIK_COUNT,2)
 
     def __repr__(self):
         return f"|Support Type: roller, Location: {self.x}, Reaction Force: {self.ReactionForce}|"
@@ -131,59 +177,6 @@ class RollerSupport(PointSupport):
     def __eq__(self, other):
         return isinstance(other, RollerSupport) and self.x == other.x
 
-class DemoFixedSupport(Support, Demo):
-    def __init__(self, side, demox, demoy, datas):
-        self.side = side
-        self.showx = demox
-        self.showy = demoy
 
-        self.datas = datas
-
-    def draw(self,win):
-        FixedSupport.draw_fixed_sup(win,BLACK,self.showx            ,self.showy,self.side,fixed_width/2,fixed_height/2,2)
-
-    def __repr__(self):
-        return f"demo-fixed: " + self.datas
-
-    def __eq__(self,other):
-        return isinstance(other, DemoFixedSupport) and self.showx == other.x and self.showy == other.y
-
-
-class DemoPinnedSupport(PointSupport, Demo):
-    def __init__(self, demox, demoy, datas):
-        self.showx = demox
-        self.showy = demoy
-        self.points = ((demox,demoy),(demox - sup_height /2,demoy + sup_height),(demox + sup_height /2,demoy + sup_height))
-
-        self.datas = datas
-
-    def draw(self, win):
-        super().draw(win)
-        self.draw_tırtık(win,"black","down",*self.points[1],sup_height,tırtık_height,tırtık_count,2)
-
-    def __repr__(self):
-        return f"demo-pinned: " + self.datas
-
-    def __eq__(self, other):
-        return isinstance(other, DemoPinnedSupport) and self.datas == other.datas
-
-class DemoRollerSupport(PointSupport, Demo):
-    def __init__(self, x, y, datas):
-        self.points = ((x,y),(x - sup_height /2,y + sup_height * 0.8),(x + sup_height /2,y + sup_height * 0.8))
-        self.radius = 0.1 * sup_height
-        self.tırtık_locy = y + sup_height * 0.8 + 1.9 * self.radius
-
-        self.datas = datas
-
-    def draw(self, win):
-        super().draw(win)
-        draw_circles(win,"black",*self.points[1],sup_height,self.radius,2)
-        self.draw_tırtık(win,"black","down",self.points[1][0],self.tırtık_locy,sup_height,tırtık_height,tırtık_count,2)
-
-    def __repr__(self):
-        return f"|Support Type: demo-roller|" + self.datas
-
-    def __eq__(self, other):
-        return isinstance(other, DemoRollerSupport) and self.datas == other.datas
 
 

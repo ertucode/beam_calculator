@@ -1,7 +1,6 @@
-from vars import beam_left, beam_right, beam_mid, beam_length, \
-    beam_height, beam_below,beam_y,WIDTH,HEIGHT,BLACK,forcelen,momentw
+from vars import BEAM_LEFT, BEAM_RIGHT, BEAM_HEIGHT, BEAM_TOP
 
-from __init__ import *
+from components import *
 
 def draw_arrow_tip(win,COLOR,x,y,angle,size):
     tip1_ang = angle + 2*math.pi/6
@@ -20,15 +19,26 @@ def draw_moment(win,COLOR,posx,posy,width,dir,th):
         draw_arrow_tip(win,COLOR,posx+width/10,posy-width/16,math.pi/2.75,8)
 
 class Moment(Component):
-    POSY = beam_y - 6* beam_height
+    POSY = BEAM_TOP - 6* BEAM_HEIGHT
     SIZE = 40
-    def __init__(self,x,mag):
+    def __init__(self,x,mag,beam_length):
         self.x = x
         self.mag = mag
         self.set_dir()
 
         self.set_location_according_to_beam_length(beam_length)
-     
+        self.setup_demo()
+    
+    def setup_demo(self):
+        self.demo_surface = pygame.Surface.copy(Demo.DEMO_SURFACE)
+        rect = self.demo_surface.get_rect()
+        
+        draw_moment(self.demo_surface,"black",rect.centerx,rect.top + self.SIZE,self.SIZE,self.direction,2)
+        print_demo_data(self.demo_surface, ("Moment", f"x = {self.x}",f"Mag = {self.mag}",f"Dir = {self.direction}"), rect, Demo.OUTLINE_WIDTH, Demo.OUTLINE_HEIGHT)
+
+    def draw_demo(self, surface, point):
+        surface.blit(self.demo_surface, point)     
+
     def set_dir(self):
         if self.mag>0:
             self.direction = "CCW"
@@ -36,31 +46,13 @@ class Moment(Component):
             self.direction = "CW"
             
     def set_location_according_to_beam_length(self,beam_length):
-        self.mappedx = map_value(self.x,0,beam_length,beam_left,beam_right)
+        self.mappedx = map_value(self.x,0,beam_length,BEAM_LEFT,BEAM_RIGHT)
 
     def draw(self,win):
-        draw_moment(win,BLACK,self.mappedx,self.POSY,self.SIZE,self.direction,2)
+        draw_moment(win,"black",self.mappedx,self.POSY,self.SIZE,self.direction,2)
 
     def __eq__(self,other):
         return isinstance(other, Moment) and self.x == other.x and self.mag==other.mag
 
     def __repr__(self):
         return "Moment, Location:"+str(self.x)+", Magnitude:"+str(self.mag)
-
-class DemoMoment(Demo):
-    SIZE = 30
-    def __init__(self,demox,demoy,direction,datas):
-        self.datas = datas
-        self.direction = direction
-        
-        self.showx = demox
-        self.showy = demoy - DemoMoment.SIZE * 0.5
-
-    def draw(self,win):
-        draw_moment(win,BLACK,self.showx,self.showy,self.SIZE,self.direction,2)
-
-    def __eq__(self,other):
-        return isinstance(other, DemoMoment) and self.datas == other.datas
-    
-    def __repr__(self):
-        return "demo-moment: " + self.datas
