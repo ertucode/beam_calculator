@@ -1,7 +1,7 @@
 
 from components import *
 
-from vars import BEAM_LEFT, BEAM_RIGHT, BEAM_TOP
+from variables import BEAM_LEFT, BEAM_RIGHT, BEAM_TOP
 
 def draw_dist_load(win,COLOR,x,y,width,height,dir,startmag,endmag,maxmag):
     space = 15
@@ -32,11 +32,9 @@ class Distload(Component):
         self.maxmag = max(self.startmag,self.endmag)
         
         self.set_location_according_to_beam_length(beam_length)
-        self.calculate_equivalent_quantiies()
+        self.calculate_equivalent_quantities()
 
         self.direction = direction
-
-        self.setup_demo()
     
     def setup_demo(self):
         self.demo_surface = pygame.Surface.copy(DemoWithInfo.DEMO_SURFACE)
@@ -61,7 +59,7 @@ class Distload(Component):
     def draw(self,win):
         draw_dist_load(win,"black",self.mappedstartx,BEAM_TOP,self.width,self.HEIGHT,self.direction,self.startmag,self.endmag,self.maxmag)
     
-    def calculate_equivalent_quantiies(self):
+    def calculate_equivalent_quantities(self):
         width = self.endx-self.startx
         if self.startmag >= self.endmag:
             MaxLoad = self.startmag
@@ -78,7 +76,7 @@ class Distload(Component):
         self.eq_loc = self.startx + self.eq_loc
         
     def __eq__(self,other):
-        return self.startx==other.startx and self.endx==other.endx and self.startmag==other.startmag and self.endmag==other.endmag and self.direction==other.direction
+        return isinstance(other, Distload) and self.startx==other.startx and self.endx==other.endx and self.startmag==other.startmag and self.endmag==other.endmag and self.direction==other.direction
 
     def __repr__(self):
         return f"DistributedLoad, Start/End: {self.startx}/{self.endx}, Magnitudes: {self.startmag},{self.endmag}, Direction: {self.direction}"
@@ -86,3 +84,7 @@ class Distload(Component):
     @classmethod
     def create_demo(cls):
         return cls(0, 15, 10, 15, "down", 25)
+
+    def duplicate(self, beam_length):
+        """Needed since you can't deepcopy pygame.Surface objects"""
+        return type(self)(self.startx,self.endx,self.startmag,self.endmag,self.direction, beam_length)

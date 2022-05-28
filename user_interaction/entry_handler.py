@@ -1,44 +1,11 @@
 import pygame
-from myfuncs import scale_rect
-from myfuncs import draw_arrow as DrawArrow
-from vars import WIDTH
-from math import sqrt
+from variables import WIDTH
+import ui
+
 import inspect
-
 from components import Component
-from components.force import Force
-from components.support import Support
-from components.distributed_load import Distload
-from components.moment import Moment
-from button import Button
 
-def draw_dashed_line(surf, color, start_pos, end_pos, width=1, dash_length=10):
-    x1, y1 = start_pos
-    x2, y2 = end_pos
-    dl = dash_length
 
-    if (x1 == x2):
-        ycoords = [y for y in range(y1, y2, dl if y1 < y2 else -dl)]
-        xcoords = [x1] * len(ycoords)
-    elif (y1 == y2):
-        xcoords = [x for x in range(x1, x2, dl if x1 < x2 else -dl)]
-        ycoords = [y1] * len(xcoords)
-    else:
-        a = abs(x2 - x1)
-        b = abs(y2 - y1)
-        c = round(sqrt(a**2 + b**2))
-        dx = dl * a / c
-        dy = dl * b / c
-
-        xcoords = [x for x in range(x1, x2, dx if x1 < x2 else -dx)]
-        ycoords = [y for y in range(y1, y2, dy if y1 < y2 else -dy)]
-
-    next_coords = list(zip(xcoords[1::2], ycoords[1::2]))
-    last_coords = list(zip(xcoords[0::2], ycoords[0::2]))
-    for (x1, y1), (x2, y2) in zip(next_coords, last_coords):
-        start = (round(x1), round(y1))
-        end = (round(x2), round(y2))
-        pygame.draw.line(surf, color, start, end, width)
     
 class EntryHandler:
     
@@ -53,7 +20,7 @@ class EntryHandler:
         self.results = None
         self.asking_for = asking_for
         self.arrowimg = pygame.image.load("images/arrow.png")
-        ### change font with a press
+        
 
     def draw_prompts(self,win):
         if self.ySpacing:
@@ -62,7 +29,7 @@ class EntryHandler:
                     text_rect = pygame.Rect(self.x,self.y+i*(self.ySpacing+self.entries[i-1].height),entry.PromptWidth,entry.height)
                 else:
                     text_rect = pygame.Rect(self.x,self.y,entry.PromptWidth,entry.height)
-                text_rect = scale_rect(text_rect,0.95)
+                text_rect = ui.scale_rect(text_rect,0.95)
                 myfont = pygame.font.SysFont(entry.font,entry.fontsize)
                 text_sur = myfont.render(entry.PromptText,True,entry.PromptTextColor)
                 win.blit(text_sur,text_rect)
@@ -79,7 +46,7 @@ class EntryHandler:
                     text_rect = pygame.Rect(self.x+entry.PromptWidth,self.y+i*(self.ySpacing+entry.height),entry.InputWidth,entry.height)
                 else:
                     text_rect = pygame.Rect(self.x+entry.PromptWidth,self.y,entry.InputWidth,entry.height)
-                text_rect = scale_rect(text_rect,0.95)
+                text_rect = ui.scale_rect(text_rect,0.95)
                 myfont = pygame.font.SysFont(entry.font,entry.fontsize)
                 text_sur = myfont.render(entry.InputText,True,entry.InputTextColor)
                 win.blit(text_sur,text_rect)
@@ -103,13 +70,6 @@ class EntryHandler:
         if inspect.isclass(self.asking_for) and issubclass(self.asking_for, Component):
             demo = self.asking_for.create_demo()
             demo.draw_demo_shape(win, self.DEMO_RECT.topleft)
-
-
-    def draw_demo_outline(self,win,outlinecolor,orect):
-        draw_dashed_line(win,outlinecolor,orect.topright,orect.topleft,2)
-        draw_dashed_line(win,outlinecolor,orect.bottomleft,orect.bottomright,2)
-        draw_dashed_line(win,outlinecolor,orect.topleft,orect.bottomleft,2)
-        draw_dashed_line(win,outlinecolor,orect.bottomright,orect.topright,2)
 
 
     def draw(self,win):

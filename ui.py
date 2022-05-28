@@ -1,6 +1,6 @@
 import pygame
 import time
-from vars import WIDTH, HEIGHT
+from variables import WIDTH, HEIGHT
 
 mainfont = "berlinsansfbdemikalın"
 
@@ -66,3 +66,10 @@ def display_message(win, message, text_rect):
     win.blit(text_sur,text_rect)
     pygame.display.update()
     time.sleep(1)
+
+def scale_rect(rect,scale_factor):
+    center = rect.center
+    rect.w = rect.w*scale_factor
+    rect.h = rect.h*scale_factor
+    rect.center = center
+    return rect

@@ -1,4 +1,4 @@
-from vars import BEAM_LEFT, BEAM_RIGHT, BEAM_TOP,BLACK
+from variables import BEAM_LEFT, BEAM_RIGHT, BEAM_TOP,BLACK
 
 from components import *
 
@@ -14,7 +14,6 @@ class Force(Component):
 
         self.calc_fx_fy()
         self.set_location_according_to_beam_length(beam_length)
-        self.setup_demo()
     
     def setup_demo(self):
         self.demo_surface = pygame.Surface.copy(DemoWithInfo.DEMO_SURFACE)
@@ -48,4 +47,8 @@ class Force(Component):
     @classmethod
     def create_demo(cls):
         return cls(0, 15, 45, 10)
+
+    def duplicate(self, beam_length):
+        """Needed since you can't deepcopy pygame.Surface objects"""
+        return type(self)(self.x, self.mag, self.angle_in_degrees, beam_length)
 

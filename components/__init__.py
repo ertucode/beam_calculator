@@ -1,6 +1,6 @@
 import pygame
 import math
-from vars import HEIGHT, FULLHEIGHT
+from variables import HEIGHT, FULLHEIGHT
 import ui
 
 def init_demo(width, height):

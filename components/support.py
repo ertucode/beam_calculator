@@ -1,5 +1,5 @@
 from components import * 
-from vars import BEAM_LEFT, BEAM_RIGHT, BEAM_BOTTOM, BEAM_TOP
+from variables import BEAM_LEFT, BEAM_RIGHT, BEAM_BOTTOM, BEAM_TOP
     
 SUPPORT_SIZE = 35
 
@@ -46,8 +46,6 @@ class FixedSupport(Support):
 
         self.reaction_force = "Not Calculated"
         self.reaction_moment = "Not Calculated"
-
-        self.setup_demo()
     
     def setup_demo(self):
         draw_width = self.DRAW_WIDTH * 0.5
@@ -56,7 +54,7 @@ class FixedSupport(Support):
         self.demo_surface = pygame.Surface.copy(DemoWithInfo.DEMO_SURFACE)
         rect = self.demo_surface.get_rect()
         FixedSupport.draw_fixed_sup(self.demo_surface, "black", rect.centerx, rect.centery - DemoWithInfo.OUTLINE_HEIGHT * 0.25 - 30, self.side, draw_width, draw_height, 2)   
-        print_demo_data(self.demo_surface, ("Fixed", self.side), rect, DemoWithInfo.OUTLINE_WIDTH, DemoWithInfo.OUTLINE_HEIGHT)
+        print_demo_data(self.demo_surface, ("Fixed", f"{self.side}"), rect, DemoWithInfo.OUTLINE_WIDTH, DemoWithInfo.OUTLINE_HEIGHT)
 
     def set_location_according_to_beam_length(self,beam_length):
         if self.side == "left":
@@ -72,6 +70,12 @@ class FixedSupport(Support):
         elif self.side == "right":
             self.draw_fixed_sup(win,"black",self.mappedx            ,BEAM_TOP - self.DRAW_HEIGHT/2,self.side,self.DRAW_WIDTH,self.DRAW_HEIGHT,2)
         
+    def duplicate(self, beam_length):
+        """Needed since you can't deepcopy pygame.Surface objects"""
+        dup = type(self)(self.side, beam_length)
+        dup.reaction_force, dup.reaction_moment = self.reaction_force, self.reaction_moment
+        return dup
+
 
     @staticmethod
     def draw_fixed_sup(win,COLOR,x,y,side,width,height,th):
@@ -96,7 +100,7 @@ class PointSupport(Support):
     CONSTRUCT_QUESTIONS = ("Location[m]: ",)
     def __init__(self, x):
         self.x = x
-        self.ReactionForce = "Not Calculated"
+        self.reaction_force = "Not Calculated"
 
     def draw(self, win):
         pygame.draw.lines(win,"black",True,self.points,2)
@@ -105,12 +109,16 @@ class PointSupport(Support):
     def create_demo(cls):
         return cls(0, 10)
 
+    def duplicate(self, beam_length):
+        """Needed since you can't deepcopy pygame.Surface objects"""
+        dup = type(self)(self.x, beam_length)
+        dup.reaction_force = self.reaction_force
+        return dup
+
 class PinnedSupport(PointSupport):
     def __init__(self, x,beam_length):
         super().__init__(x)
         self.set_location_according_to_beam_length(beam_length)
-
-        self.setup_demo()
     
     def setup_demo(self):
 
@@ -134,7 +142,7 @@ class PinnedSupport(PointSupport):
         self.draw_tırtık(win,"black","down",*self.points[1],SUPPORT_SIZE,TIRTIK_HEIGHT,TIRTIK_COUNT,2)
 
     def __repr__(self):
-        return f"|Support Type: pinned, Location: {self.x}, Reaction Force: {self.ReactionForce}|"
+        return f"|Support Type: pinned, Location: {self.x}, Reaction Force: {self.reaction_force}|"
 
     def __eq__(self, other):
         return isinstance(other, FixedSupport) and self.x == other.x
@@ -143,8 +151,6 @@ class RollerSupport(PointSupport):
     def __init__(self, x,beam_length):
         super().__init__(x)
         self.set_location_according_to_beam_length(beam_length)
-
-        self.setup_demo()
     
     def setup_demo(self):
         self.demo_surface = pygame.Surface.copy(DemoWithInfo.DEMO_SURFACE)
@@ -174,7 +180,7 @@ class RollerSupport(PointSupport):
         self.draw_tırtık(win,"black","down",self.points[1][0],self.tırtık_locy,SUPPORT_SIZE,TIRTIK_HEIGHT,TIRTIK_COUNT,2)
 
     def __repr__(self):
-        return f"|Support Type: roller, Location: {self.x}, Reaction Force: {self.ReactionForce}|"
+        return f"|Support Type: roller, Location: {self.x}, Reaction Force: {self.reaction_force}|"
 
     def __eq__(self, other):
         return isinstance(other, RollerSupport) and self.x == other.x
