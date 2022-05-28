@@ -21,6 +21,8 @@ def draw_dist_load(win,COLOR,x,y,width,height,dir,startmag,endmag,maxmag):
 
 class Distload(Component):
     HEIGHT = 50
+
+    CONSTRUCT_QUESTIONS = ("Direction[up/down]:","Starting Location[m]: ","Starting Magnitude[N/m]: ","Ending Location[m]: ","Ending Magnitude[N/m]: ")
     def __init__(self,startx,endx,startmag,endmag,direction,beam_length):
         self.startx = startx
         self.endx = endx
@@ -37,7 +39,7 @@ class Distload(Component):
         self.setup_demo()
     
     def setup_demo(self):
-        self.demo_surface = pygame.Surface.copy(Demo.DEMO_SURFACE)
+        self.demo_surface = pygame.Surface.copy(DemoWithInfo.DEMO_SURFACE)
         rect = self.demo_surface.get_rect()
         XOFF = 10
         if self.direction == "down":
@@ -48,10 +50,7 @@ class Distload(Component):
         width = rect.right - 2 * XOFF
         draw_dist_load(self.demo_surface,"black",startx,y,width,self.HEIGHT * 0.5,self.direction,self.startmag,self.endmag,self.maxmag)
         print_demo_data(self.demo_surface, ("Distributed L.", f"Dir = {self.direction}",f"x_i = {self.startx}",f"x_f = {self.endx}",f"Mag_i = {self.startmag}",f"Mag_f = {self.endmag}"),
-                 rect, Demo.OUTLINE_WIDTH, Demo.OUTLINE_HEIGHT)
-
-    def draw_demo(self, surface, point):
-        surface.blit(self.demo_surface, point)  
+                 rect, DemoWithInfo.OUTLINE_WIDTH, DemoWithInfo.OUTLINE_HEIGHT)
 
 
     def set_location_according_to_beam_length(self,beam_length):
@@ -84,3 +83,6 @@ class Distload(Component):
     def __repr__(self):
         return f"DistributedLoad, Start/End: {self.startx}/{self.endx}, Magnitudes: {self.startmag},{self.endmag}, Direction: {self.direction}"
 
+    @classmethod
+    def create_demo(cls):
+        return cls(0, 15, 10, 15, "down", 25)

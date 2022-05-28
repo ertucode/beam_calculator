@@ -37,6 +37,8 @@ class Support(Component):
 class FixedSupport(Support):
     DRAW_WIDTH = 10
     DRAW_HEIGHT = 100
+
+    CONSTRUCT_QUESTIONS = ("Location[left/right]: ",)
     def __init__(self,side,beam_length):
         self.side = side
         
@@ -51,13 +53,10 @@ class FixedSupport(Support):
         draw_width = self.DRAW_WIDTH * 0.5
         draw_height = self.DRAW_HEIGHT * 0.5
 
-        self.demo_surface = pygame.Surface.copy(Demo.DEMO_SURFACE)
+        self.demo_surface = pygame.Surface.copy(DemoWithInfo.DEMO_SURFACE)
         rect = self.demo_surface.get_rect()
-        FixedSupport.draw_fixed_sup(self.demo_surface, "black", rect.centerx, rect.centery - Demo.OUTLINE_HEIGHT * 0.25 - 30, self.side, draw_width, draw_height, 2)   
-        print_demo_data(self.demo_surface, ("Fixed", self.side), rect, Demo.OUTLINE_WIDTH, Demo.OUTLINE_HEIGHT)
-
-    def draw_demo(self, surface, point):
-        surface.blit(self.demo_surface, point)
+        FixedSupport.draw_fixed_sup(self.demo_surface, "black", rect.centerx, rect.centery - DemoWithInfo.OUTLINE_HEIGHT * 0.25 - 30, self.side, draw_width, draw_height, 2)   
+        print_demo_data(self.demo_surface, ("Fixed", self.side), rect, DemoWithInfo.OUTLINE_WIDTH, DemoWithInfo.OUTLINE_HEIGHT)
 
     def set_location_according_to_beam_length(self,beam_length):
         if self.side == "left":
@@ -89,14 +88,22 @@ class FixedSupport(Support):
     def __eq__(self,other):
         return isinstance(other, FixedSupport) and self.side==other.side
 
+    @classmethod
+    def create_demo(cls):
+        return cls("left", 10)
 
 class PointSupport(Support):
+    CONSTRUCT_QUESTIONS = ("Location[m]: ",)
     def __init__(self, x):
         self.x = x
         self.ReactionForce = "Not Calculated"
 
     def draw(self, win):
         pygame.draw.lines(win,"black",True,self.points,2)
+
+    @classmethod
+    def create_demo(cls):
+        return cls(0, 10)
 
 class PinnedSupport(PointSupport):
     def __init__(self, x,beam_length):
@@ -107,17 +114,15 @@ class PinnedSupport(PointSupport):
     
     def setup_demo(self):
 
-        self.demo_surface = pygame.Surface.copy(Demo.DEMO_SURFACE)
+        self.demo_surface = pygame.Surface.copy(DemoWithInfo.DEMO_SURFACE)
         rect = self.demo_surface.get_rect()
         
         x, y, width, height = rect.centerx, rect.top + SUPPORT_SIZE - 20, SUPPORT_SIZE, SUPPORT_SIZE
         points = ((x,y),(x - width /2,y + height),(x + width /2,y + height))
         pygame.draw.lines(self.demo_surface, "black", True, points, 2)
         self.draw_tırtık(self.demo_surface,"black","down",*points[1],SUPPORT_SIZE,TIRTIK_HEIGHT,TIRTIK_COUNT,2)
-        print_demo_data(self.demo_surface, ("Pinned", f"{self.x} m"), rect, Demo.OUTLINE_WIDTH, Demo.OUTLINE_HEIGHT)
-    
-    def draw_demo(self, surface, point):
-        surface.blit(self.demo_surface, point)
+        print_demo_data(self.demo_surface, ("Pinned", f"{self.x} m"), rect, DemoWithInfo.OUTLINE_WIDTH, DemoWithInfo.OUTLINE_HEIGHT)
+
 
     def set_location_according_to_beam_length(self, beam_length):
         self.mappedx = map_value(self.x,0,beam_length,BEAM_LEFT,BEAM_RIGHT)
@@ -142,7 +147,7 @@ class RollerSupport(PointSupport):
         self.setup_demo()
     
     def setup_demo(self):
-        self.demo_surface = pygame.Surface.copy(Demo.DEMO_SURFACE)
+        self.demo_surface = pygame.Surface.copy(DemoWithInfo.DEMO_SURFACE)
         rect = self.demo_surface.get_rect()
         
         x, y, width, height = rect.centerx, rect.top + SUPPORT_SIZE - 20, SUPPORT_SIZE, SUPPORT_SIZE * 0.8
@@ -152,10 +157,7 @@ class RollerSupport(PointSupport):
         pygame.draw.lines(self.demo_surface, "black", True, points, 2)
         draw_circles(self.demo_surface,"black",*points[1],SUPPORT_SIZE,radius,2)
         self.draw_tırtık(self.demo_surface,"black","down",points[1][0],tırtık_locy,SUPPORT_SIZE,TIRTIK_HEIGHT,TIRTIK_COUNT,2)
-        print_demo_data(self.demo_surface, ("Roller", f"{self.x} m"), rect, Demo.OUTLINE_WIDTH, Demo.OUTLINE_HEIGHT)
-    
-    def draw_demo(self, surface, point):
-        surface.blit(self.demo_surface, point)        
+        print_demo_data(self.demo_surface, ("Roller", f"{self.x} m"), rect, DemoWithInfo.OUTLINE_WIDTH, DemoWithInfo.OUTLINE_HEIGHT)     
     
     def set_location_according_to_beam_length(self, beam_length):
         self.mappedx = map_value(self.x,0,beam_length,BEAM_LEFT,BEAM_RIGHT)

@@ -21,7 +21,9 @@ def draw_moment(win,COLOR,posx,posy,width,dir,th):
 class Moment(Component):
     POSY = BEAM_TOP - 6* BEAM_HEIGHT
     SIZE = 40
-    def __init__(self,x,mag,beam_length):
+
+    CONSTRUCT_QUESTIONS = ("Location[m]: ","Magnitude[Nm][""+"" for CCW ""-""CW]: ")
+    def __init__(self, x, mag, beam_length):
         self.x = x
         self.mag = mag
         self.set_dir()
@@ -30,14 +32,11 @@ class Moment(Component):
         self.setup_demo()
     
     def setup_demo(self):
-        self.demo_surface = pygame.Surface.copy(Demo.DEMO_SURFACE)
+        self.demo_surface = pygame.Surface.copy(DemoWithInfo.DEMO_SURFACE)
         rect = self.demo_surface.get_rect()
         
         draw_moment(self.demo_surface,"black",rect.centerx,rect.top + self.SIZE,self.SIZE,self.direction,2)
-        print_demo_data(self.demo_surface, ("Moment", f"x = {self.x}",f"Mag = {self.mag}",f"Dir = {self.direction}"), rect, Demo.OUTLINE_WIDTH, Demo.OUTLINE_HEIGHT)
-
-    def draw_demo(self, surface, point):
-        surface.blit(self.demo_surface, point)     
+        print_demo_data(self.demo_surface, ("Moment", f"x = {self.x}",f"Mag = {self.mag}",f"Dir = {self.direction}"), rect, DemoWithInfo.OUTLINE_WIDTH, DemoWithInfo.OUTLINE_HEIGHT) 
 
     def set_dir(self):
         if self.mag>0:
@@ -56,3 +55,7 @@ class Moment(Component):
 
     def __repr__(self):
         return "Moment, Location:"+str(self.x)+", Magnitude:"+str(self.mag)
+
+    @classmethod
+    def create_demo(cls):
+        return cls(0, 15, 10)

@@ -4,6 +4,7 @@ from components import *
 
 class Force(Component):
     SHOW_LEN = 75
+    CONSTRUCT_QUESTIONS = ("Location[m]: ","Magnitude[N]:","Angle[deg]:")
     def __init__(self,x,mag,angle,beam_length):
         self.x = x
         self.angle_in_degrees = angle
@@ -16,7 +17,7 @@ class Force(Component):
         self.setup_demo()
     
     def setup_demo(self):
-        self.demo_surface = pygame.Surface.copy(Demo.DEMO_SURFACE)
+        self.demo_surface = pygame.Surface.copy(DemoWithInfo.DEMO_SURFACE)
         rect = self.demo_surface.get_rect()
         desy = rect.top + 40
         length = self.SHOW_LEN * 0.5
@@ -24,10 +25,7 @@ class Force(Component):
         posy = desy + math.sin(self.angle)*length /2
         endpos = (posx+length*math.cos(self.angle),posy-length*math.sin(self.angle))
         draw_arrow(self.demo_surface,BLACK,(posx, posy),endpos,2)
-        print_demo_data(self.demo_surface, ("Force", f"x = {self.x}",f"Mag = {self.mag}",f"Ang = {self.angle_in_degrees}"), rect, Demo.OUTLINE_WIDTH, Demo.OUTLINE_HEIGHT)
-
-    def draw_demo(self, surface, point):
-        surface.blit(self.demo_surface, point)
+        print_demo_data(self.demo_surface, ("Force", f"x = {self.x}",f"Mag = {self.mag}",f"Ang = {self.angle_in_degrees}"), rect, DemoWithInfo.OUTLINE_WIDTH, DemoWithInfo.OUTLINE_HEIGHT)
 
     def calc_fx_fy(self):
         self.fx = self.mag*math.cos(self.angle)
@@ -47,4 +45,7 @@ class Force(Component):
     def __eq__(self,other):
         return isinstance(other, Force) and self.x == other.x and self.mag==other.mag and self.angle == other.angle
 
+    @classmethod
+    def create_demo(cls):
+        return cls(0, 15, 45, 10)
 

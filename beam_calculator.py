@@ -4,7 +4,7 @@ from entry_handler import draw_dashed_line
 from time import sleep
 
 from math import pi, sin,cos
-from components import Component, Demo
+from components import Component, DemoWithInfo
 from components.force import Force, DemoForce
 from components.support import Support, FixedSupport, PinnedSupport, RollerSupport, DemoFixedSupport, DemoPinnedSupport, DemoRollerSupport
 from components.distributed_load import Distload, DemoDistload
@@ -338,7 +338,7 @@ def GetEntryFields(type,questions):
     if type == "fixed" or type == "distload":
         getLetter = True
     for question in questions:
-        entries.append(Entry(25,Prompt=(question,200,(255,255,255),(0,0,200)),Input=["",100,(255,255,255),(0,0,200)],getLetter=getLetter,Active = First,type=type))
+        entries.append(Entry(25,Prompt=(question,200,(255,255,255),(0,0,200)),Input=["",100,(255,255,255),(0,0,200)],getLetter=getLetter,Active = First,component_type=type))
         getLetter = False
         First = False
     return entries
@@ -358,9 +358,9 @@ run = True
 
 ####
 entries = GetEntryFields(None,["Beam Length"])
-handler = EntryHandler(entries,WIDTH/2-100,20,ySpacing=10,type="beam")
+handler = EntryHandler(entries,WIDTH/2-100,20,ySpacing=10,asking_for="beam")
 deleted = False
-handler.Exist = True
+handler.inputs_are_complete = True
 exists = True
 
 
@@ -374,7 +374,7 @@ while run:
     FPS = 60
     clock.tick(FPS)
     if exists:
-        exists = handler.Exist
+        exists = handler.inputs_are_complete
         if not exists:
             deleted = False
 
@@ -388,7 +388,7 @@ while run:
         if exists:
             if event.type == pygame.MOUSEMOTION:
                 pos = pygame.mouse.get_pos()
-                handler.HandleHovering(pos)
+                handler.handle_mouse_hover(pos)
 
         if event.type == pygame.MOUSEBUTTONDOWN:
             pos = pygame.mouse.get_pos()
@@ -400,22 +400,22 @@ while run:
 
 
             if exists:
-                handler.HandleMouseDown(pos)
+                handler.handle_mouse_down(pos)
             for button in buttons:
                 button.isHovering(pos)
                 if button.big:
                     if button.type == "fixed" or button.type == "pinned" or button.type == "roller" or button.type == "force" or button.type == "distload" or button.type == "moment":
                         entries= GetEntryFields(button.type,button.questions)
-                        handler = EntryHandler(entries,WIDTH/2-100,20,ySpacing=10,type=button.type)
+                        handler = EntryHandler(entries,WIDTH/2-100,20,ySpacing=10,asking_for=button.type)
                         deleted = False
-                        handler.Exist = True
+                        handler.inputs_are_complete = True
                         exists = True
                     elif button.type == "show":
                         PlotDiagrams(objects,beam_length)
 
         if event.type == pygame.KEYDOWN:
             if exists:
-                handler.HandleKeyInputs(event.key)
+                handler.handle_key_inputs(event.key)
             if len(rects)>8:
                 if event.key == pygame.K_RIGHT:
                     if offset > 6-len(rects):
@@ -433,21 +433,21 @@ while run:
                         if i==7:
                             i=6
                         entries= GetEntryFields(type,ButtonQuestions[i])
-                        handler = EntryHandler(entries,WIDTH/2-100,20,ySpacing=10,type=type)
+                        handler = EntryHandler(entries,WIDTH/2-100,20,ySpacing=10,asking_for=type)
                         # handler = copy.deepcopy(handler)
                         deleted = False
-                        handler.Exist = True
+                        handler.inputs_are_complete = True
                         exists = True
             
             if event.key == pygame.K_ASTERISK:
                 print(objects)
             else:
                 if exists: 
-                    handler.TypeToActive(event)
+                    handler.type_to_active_field(event)
 
     if not deleted:
         if handler.results:
-            type = handler.type
+            type = handler.asking_for
             Ans = handler.results
             if type == "fixed":
                 if Ans[0]=="left" or Ans[0]=="right":

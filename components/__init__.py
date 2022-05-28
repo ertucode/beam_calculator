@@ -10,12 +10,24 @@ def init_demo(width, height):
     ui.draw_dashed_outline(DEMO_SURFACE, OUTLINE_COLOR, pygame.Rect(0, 0, width, height))
     return DEMO_SURFACE
 
-class Demo:
+class DemoWithInfo:
     OUTLINE_WIDTH = 100
     OUTLINE_HEIGHT = FULLHEIGHT - HEIGHT + 10
     DEMO_SURFACE = init_demo(OUTLINE_WIDTH, OUTLINE_HEIGHT)
 
-class Component: pass
+class DemoForShape:
+    OUTLINE_WIDTH = 100
+    OUTLINE_HEIGHT = 116
+    DEMO_SURFACE = init_demo(OUTLINE_WIDTH, OUTLINE_HEIGHT)
+
+class Component:
+    def draw_shape_and_info(self, surface, point):
+        surface.blit(self.demo_surface, point)  
+
+    def draw_demo_shape(self, surface, point):
+        demo_surface = pygame.Surface.copy(DemoForShape.DEMO_SURFACE)
+        demo_surface.blit(self.demo_surface, (0,0), (0, 0, DemoWithInfo.OUTLINE_WIDTH, DemoForShape.OUTLINE_HEIGHT - 5))
+        surface.blit(demo_surface, point)
 
 TIRTIK_HEIGHT = 5
 TIRTIK_COUNT = 6

@@ -1,4 +1,6 @@
 import pygame
+import time
+from vars import WIDTH, HEIGHT
 
 mainfont = "berlinsansfbdemikalın"
 
@@ -33,6 +35,7 @@ def draw_dashed_line(surf, color, start_pos, end_pos, width=1, dash_length=10):
         xcoords = [x for x in range(x1, x2, dl if x1 < x2 else -dl)]
         ycoords = [y1] * len(xcoords)
     else:
+        # Diagonal line
         a = abs(x2 - x1)
         b = abs(y2 - y1)
         c = round((a**2 + b**2) ** 0.5)
@@ -54,3 +57,12 @@ def draw_dashed_outline(win,outlinecolor,orect):
     draw_dashed_line(win,outlinecolor,orect.bottomleft,orect.bottomright,2)
     draw_dashed_line(win,outlinecolor,orect.topleft,orect.bottomleft,2)
     draw_dashed_line(win,outlinecolor,orect.bottomright,orect.topright,2)
+
+def display_message(win, message, text_rect):
+    """Display a message for 1 second"""
+    #text_rect = pygame.Rect(WIDTH/2-50,HEIGHT-30,100,20)
+    myfont = pygame.font.SysFont(mainfont,12)
+    text_sur = myfont.render(message,True,"black")
+    win.blit(text_sur,text_rect)
+    pygame.display.update()
+    time.sleep(1)

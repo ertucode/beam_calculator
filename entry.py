@@ -2,7 +2,7 @@ from vars import EntryFont
 
 
 class Entry:
-    def __init__(self,height,font=EntryFont,fontsize=12,Prompt = None,Input = None,Active = False,getLetter=False,type=None):
+    def __init__(self,height,font=EntryFont,fontsize=12,Prompt = None,Input = None,Active = False,getLetter=False,component_type=None):
         self.height = height
         self.font = font
         self.fontsize = fontsize
@@ -11,7 +11,7 @@ class Entry:
         
         self.hoveringprompt = False
         self.hoveringinput = False
-        self.type = type
+        self.component_type = component_type
 
         if Prompt != None:
             self.PromptText = Prompt[0]
