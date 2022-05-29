@@ -24,7 +24,7 @@ class Distload(Component):
 
     CONSTRUCT_QUESTIONS = ("Direction[up/down]:","Starting Location[m]: ","Starting Magnitude[N/m]: ","Ending Location[m]: ","Ending Magnitude[N/m]: ")
     def __init__(self,startx,endx,startmag,endmag,direction,beam_length):
-        self.startx = startx
+        self.x = self.startx = startx
         self.endx = endx
 
         self.startmag = startmag

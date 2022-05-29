@@ -21,6 +21,8 @@ import calculate
 
 pygame.init()
 
+import time
+
 class BeamCalculator:
     NOT_SOLVABLE_RECT = pygame.Rect(WIDTH/2-50,HEIGHT-50,100,20)
     NOT_SOLVABLE_FONT = pygame.font.SysFont(ui.mainfont,12)
@@ -74,6 +76,8 @@ class BeamCalculator:
         
         self.question_asker = QuestionAsker()
 
+        self.index_of_changing = -1 # Variable to hold which item is changing
+
 
     def draw(self):
         """Draw everything on the screen"""
@@ -86,7 +90,8 @@ class BeamCalculator:
 
         #Drawing the objects and their demos at the bottom
         if self.components:
-            ui.print_text(self.win, self.UIX, HEIGHT-45, u"Click to delete \u21e9", font="cambria")
+            ui.print_text(self.win, self.UIX, HEIGHT-45, u"Left Click to delete \u21e9", font="cambria")
+            ui.print_text(self.win, self.UIX + 200, HEIGHT-45, u"Right Click to change \u21e9", font="cambria")
 
             for i, obj in enumerate(self.components):
                 obj.draw(self.win)
@@ -120,8 +125,8 @@ class BeamCalculator:
                     pos = pygame.mouse.get_pos()
 
                     if self.entry_handler: self.entry_handler.handle_mouse_down(pos)
-                    self.handle_mouse_pressed(pos)
-
+                    self.handle_mouse_pressed(pos, event.button)
+                
                 elif event.type == pygame.MOUSEMOTION:
                     if self.entry_handler: self.entry_handler.handle_mouse_hover(pygame.mouse.get_pos())
 
@@ -136,8 +141,9 @@ class BeamCalculator:
                     
                     new_component = self.question_asker.handle_key_inputs(key)
                     if new_component:
+                        self.index_of_changing = -1
                         self.entry_handler = EntryHandler(self.get_entry_fields(new_component, new_component.CONSTRUCT_QUESTIONS), self.ENTRY_START_X, self.ENTRY_START_Y, ySpacing=10, asking_for=new_component) 
-
+                    
                     try:
                         self.entry_handler.handle_key_inputs(event)
                         self.handle_entry_handler_output()
@@ -146,17 +152,20 @@ class BeamCalculator:
 
             self.draw()
 
-    def get_entry_fields(self, component_type, questions):
+    def get_entry_fields(self, component_type, questions, answers = None):
         """Get entry fields to get user input."""
         entry_fields = []
         letter_input = False
         first_input = True #First input will be the active field
 
+        if answers is None:
+            answers = tuple("" for _ in range(len(questions)))
+
         if component_type == FixedSupport or component_type == Distload:
             #First input should be a string
             letter_input = True
-        for question in questions:
-            entry_fields.append(Entry(25,Prompt=(question,200,(255,255,255),(0,0,200)),Input=["",100,(255,255,255),(0,0,200)],getLetter=letter_input,Active = first_input,component_type=component_type))
+        for question, inp in zip(questions, answers):
+            entry_fields.append(Entry(25,Prompt=(question,200,(255,255,255),(0,0,200)),Input=[str(inp),100,(255,255,255),(0,0,200)],getLetter=letter_input,Active = first_input,component_type=component_type))
             letter_input = False
             first_input = False
 
@@ -164,8 +173,8 @@ class BeamCalculator:
 
     def handle_entry_handler_output(self):
         if self.entry_handler.inputs_are_complete:
+            del self.components[self.index_of_changing]
             self.handle_component_input(self.entry_handler.asking_for, self.entry_handler.results)
-            self.entry_handler = None
 
     def handle_component_input(self, asking_for, results):
         if inspect.isclass(asking_for) and issubclass(asking_for, Component):
@@ -173,48 +182,41 @@ class BeamCalculator:
             if cls is FixedSupport:
                 if results[0]=="left" or results[0]=="right":
                     NewOb = FixedSupport(results[0], self.beam_length)
-                    self.insert_component(NewOb) 
+                    self.insert_component(NewOb)
+                    self.entry_handler = None 
+                else:
+                    ui.display_message(self.win,"Invalid entry", self.ERROR_MESSAGE_RECT) 
+            elif cls is PinnedSupport or cls is RollerSupport:
+                if float(results[0])>=0 and float(results[0])<=self.beam_length:
+                    NewOb = cls(float(results[0]), self.beam_length)
+                    self.insert_component(NewOb)
+                    self.entry_handler = None
                 else:
                     ui.display_message(self.win,"Invalid entry", self.ERROR_MESSAGE_RECT)
-                    ### Add printing previous invalid results  
-            elif cls is PinnedSupport or cls is RollerSupport:
-                try:
-                    if float(results[0])>=0 and float(results[0])<=self.beam_length:
-                        NewOb = cls(float(results[0]), self.beam_length)
-                        self.insert_component(NewOb)
-                    else:
-                        ui.display_message(self.win,"Invalid entry", self.ERROR_MESSAGE_RECT)
-                except:
-                    pass
             elif cls is Force:
-                try:
-                    if float(results[0])>=0 and float(results[0])<=self.beam_length and float(results[1])>0:
-                        NewOb = Force(float(results[0]),float(results[1]),float(results[2]), self.beam_length)
-                        self.insert_component(NewOb)
-                    else:
-                        ui.display_message(self.win,"Invalid entry", self.ERROR_MESSAGE_RECT)
-                except:
-                    pass
+                if float(results[0])>=0 and float(results[0])<=self.beam_length and float(results[1])>0:
+                    NewOb = Force(float(results[0]),float(results[1]),float(results[2]), self.beam_length)
+                    self.insert_component(NewOb)
+                    self.entry_handler = None
+                else:
+                    ui.display_message(self.win,"Invalid entry", self.ERROR_MESSAGE_RECT)
             elif cls == Distload:
-                try:
-                    if str(results[0])=="up" or str(results[0])=="down" and float(results[1])>=0 and float(results[1])<=self.beam_length and float(results[3])>=0 and float(results[3])<=self.beam_length and float(results[2])>=0 and float(results[4])>=0 and float(results[1])<float(results[3]):
-                        NewOb = Distload(float(results[1]),float(results[3]),float(results[2]),float(results[4]),str(results[0]), self.beam_length)
-                        self.insert_component(NewOb) 
-                    else:
-                        ui.display_message(self.win,"Invalid entry", self.ERROR_MESSAGE_RECT)
-                except:
-                    pass  
+                if str(results[0])=="up" or str(results[0])=="down" and float(results[1])>=0 and float(results[1])<=self.beam_length and float(results[3])>=0 and float(results[3])<=self.beam_length and float(results[2])>=0 and float(results[4])>=0 and float(results[1])<float(results[3]):
+                    NewOb = Distload(float(results[1]),float(results[3]),float(results[2]),float(results[4]),str(results[0]), self.beam_length)
+                    self.insert_component(NewOb)
+                    self.entry_handler = None 
+                else:
+                    ui.display_message(self.win,"Invalid entry", self.ERROR_MESSAGE_RECT)
             elif cls == Moment:
-                try:
-                    if float(results[0])>=0 and float(results[0])<=self.beam_length:
-                        NewOb = Moment(float(results[0]),float(results[1]), self.beam_length)
-                        self.insert_component(NewOb)  
-                    else:
-                        ui.display_message(self.win,"Invalid entry", self.ERROR_MESSAGE_RECT)
-                except:
-                    pass 
+                if float(results[0])>=0 and float(results[0])<=self.beam_length:
+                    NewOb = Moment(float(results[0]),float(results[1]), self.beam_length)
+                    self.insert_component(NewOb)
+                    self.entry_handler = None  
+                else:
+                    ui.display_message(self.win,"Invalid entry", self.ERROR_MESSAGE_RECT)
         elif asking_for == "beam":
             self.change_beam_length(float(results[0]))
+            self.entry_handler = None
 
     def ask_for_beam_length(self):
         self.entry_handler = EntryHandler(self.get_entry_fields(None, ("Beam Length",)), self.ENTRY_START_X, self.ENTRY_START_Y, ySpacing=self.ENTRY_SPACING, asking_for="beam") 
@@ -232,11 +234,34 @@ class BeamCalculator:
     def insert_component(self, component):
         component.setup_demo()
         self.components.append(component)
+        self.components.sort(key = lambda comp: comp.x)
         self.solvable = calculate.calculate_support_reactions(self.group_components())
 
     def remove_component(self, ind):
         del self.components[ind]
+        if self.index_of_changing >= 0:
+            self.index_of_changing = -1
+            self.entry_handler = None
         self.solvable = calculate.calculate_support_reactions(self.group_components())
+
+    def change_component(self, ind):
+        comp = self.components[ind]
+        class_name = type(comp)
+        
+        if isinstance(comp, Distload):
+            answers = (comp.direction, comp.startx, comp.startmag, comp.endx, comp.endmag)
+        elif isinstance(comp, FixedSupport):
+            answers = (comp.side,)
+        elif isinstance(comp, (PinnedSupport, RollerSupport)):
+            answers = (comp.x,)
+        elif isinstance(comp, Force):
+            answers = (comp.x, comp.mag, comp.angle_in_degrees)
+        elif isinstance(comp, Moment):
+            answers = (comp.x, comp.mag)
+
+        self.entry_handler = EntryHandler(self.get_entry_fields(class_name, class_name.CONSTRUCT_QUESTIONS, answers), self.ENTRY_START_X, self.ENTRY_START_Y, ySpacing=10, asking_for=class_name) 
+        self.index_of_changing = ind
+
 
     def group_components(self):
         dct = {"distloads": [], "supports": [], "forces": [], "moments": []}
@@ -272,22 +297,29 @@ class BeamCalculator:
             with open(file_name + ".json", 'w') as json_file:
                 json.dump(dct, json_file)
 
-    def load_from_json(self):
-        file_name = filedialog.askopenfilename(filetypes=[("JSON files", ".json")])
+    def load_from_json(self, file_name = None):
+        if file_name is None:
+            file_name = filedialog.askopenfilename(filetypes=[("JSON files", ".json")])
 
-        with open(file_name) as json_file:
-            dct = json.load(json_file)
+        try:
+            with open(file_name) as json_file:
+                dct = json.load(json_file)
 
 
-            for subclass in dct:
-                for comp in dct[subclass]:
-                    class_name, inputs= comp[0], comp[1:]
-                    self.handle_component_input(globals()[class_name], inputs)
+                for subclass in dct:
+                    for comp in dct[subclass]:
+                        class_name, inputs= comp[0], comp[1:]
+                        self.handle_component_input(globals()[class_name], inputs)
+        except FileNotFoundError:
+            self.load_from_json()
 
-    def handle_mouse_pressed(self, pos):
+    def handle_mouse_pressed(self, pos, button):
         for i in range(len(self.components)):
             if ui.point_in_rect(pos, (self.BOTTOM_DEMO_START_X + (self.BOTTOM_DEMO_START_X+DemoWithInfo.OUTLINE_WIDTH) * i, HEIGHT - 25, DemoWithInfo.OUTLINE_WIDTH, DemoWithInfo.OUTLINE_HEIGHT)):
-                self.remove_component(i)
+                if button == 1:
+                    self.remove_component(i)
+                elif button == 3:
+                    self.change_component(i)
 
    
 

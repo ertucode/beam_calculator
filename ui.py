@@ -59,13 +59,12 @@ def draw_dashed_outline(win,outlinecolor,orect):
     draw_dashed_line(win,outlinecolor,orect.bottomright,orect.topright,2)
 
 def display_message(win, message, text_rect):
-    """Display a message for 1 second"""
-    #text_rect = pygame.Rect(WIDTH/2-50,HEIGHT-30,100,20)
+    """Display a message for some seconds"""
     myfont = pygame.font.SysFont(mainfont,12)
     text_sur = myfont.render(message,True,"black")
     win.blit(text_sur,text_rect)
     pygame.display.update()
-    time.sleep(1)
+    time.sleep(0.3)
 
 def scale_rect(rect,scale_factor):
     center = rect.center
