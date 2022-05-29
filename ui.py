@@ -73,3 +73,6 @@ def scale_rect(rect,scale_factor):
     rect.h = rect.h*scale_factor
     rect.center = center
     return rect
+
+def point_in_rect(point, rect):
+    return rect[0] <= point[0] <= rect[0] + rect[2] and rect[1] <= point[1] <= rect[1] + rect[3]

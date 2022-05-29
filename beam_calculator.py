@@ -1,6 +1,8 @@
 import pygame
 import ui
 import inspect
+import json
+from tkinter import filedialog, simpledialog
 
 from variables import WIDTH, FULLHEIGHT, HEIGHT
 from variables import BEAM_LEFT, BEAM_RIGHT, BEAM_MID, BEAM_HEIGHT, BEAM_TOP
@@ -37,10 +39,14 @@ class BeamCalculator:
                 "F5 - Distributed Load",
                 "F6 - Moment",
                 "F7 - Show Diagrams",
-                "F8 - Change beam length")
+                "F8 - Change beam length",
+                "F9 - Save components to a file",
+                "F10 - Load components from a file")
 
     UIX = 50
     SHORTCUT_TEXT_YSTART = 40
+
+    BOTTOM_DEMO_START_X = 20
 
     def __init__(self, beam_length):
         self.beam_length = beam_length
@@ -48,7 +54,7 @@ class BeamCalculator:
         self.win = pygame.display.set_mode((WIDTH, FULLHEIGHT))
         pygame.display.set_caption("Beam Calculator")
         self.components = []
-        self.solvable = True
+        self.solvable = False
 
         self.run = True
 
@@ -57,9 +63,9 @@ class BeamCalculator:
 
 
 
-        self.insert_component(Force(5, 100, 250, self.beam_length))
-        self.insert_component(PinnedSupport(0, self.beam_length))
-        self.insert_component(PinnedSupport(10, self.beam_length))
+        # self.insert_component(Force(5, 100, 250, self.beam_length))
+        # self.insert_component(PinnedSupport(0, self.beam_length))
+        # self.insert_component(PinnedSupport(10, self.beam_length))
         
         
         # Ask for beam length at the start
@@ -81,10 +87,10 @@ class BeamCalculator:
         #Drawing the objects and their demos at the bottom
         if self.components:
             ui.print_text(self.win, self.UIX, HEIGHT-45, u"Click to delete \u21e9", font="cambria")
-            x = 20
+
             for i, obj in enumerate(self.components):
                 obj.draw(self.win)
-                obj.draw_shape_and_info(self.win, (x + (x+DemoWithInfo.OUTLINE_WIDTH) * i, HEIGHT - 25))
+                obj.draw_shape_and_info(self.win, (self.BOTTOM_DEMO_START_X + (self.BOTTOM_DEMO_START_X+DemoWithInfo.OUTLINE_WIDTH) * i, HEIGHT - 25))
 
         #If the system is not solvable, warn user
         if not self.solvable:
@@ -110,13 +116,24 @@ class BeamCalculator:
                     self.run = False
                     break
 
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    pos = pygame.mouse.get_pos()
+
+                    if self.entry_handler: self.entry_handler.handle_mouse_down(pos)
+                    self.handle_mouse_pressed(pos)
+
+                elif event.type == pygame.MOUSEMOTION:
+                    if self.entry_handler: self.entry_handler.handle_mouse_hover(pygame.mouse.get_pos())
+
                 elif event.type == pygame.KEYDOWN:
                     key = event.key
                     if key == pygame.K_F8: self.ask_for_beam_length()
                     elif key == pygame.K_F7: 
                         if self.solvable:
                             calculate.plot_diagrams(self.group_components(), self.beam_length)
-
+                    elif key == pygame.K_F9: self.save_to_json()
+                    elif key == pygame.K_F10: self.load_from_json()
+                    
                     new_component = self.question_asker.handle_key_inputs(key)
                     if new_component:
                         self.entry_handler = EntryHandler(self.get_entry_fields(new_component, new_component.CONSTRUCT_QUESTIONS), self.ENTRY_START_X, self.ENTRY_START_Y, ySpacing=10, asking_for=new_component) 
@@ -149,10 +166,6 @@ class BeamCalculator:
         if self.entry_handler.inputs_are_complete:
             self.handle_component_input(self.entry_handler.asking_for, self.entry_handler.results)
             self.entry_handler = None
-
-    def handle_component_inputs(self, inputs):
-        for i in inputs:
-            self.handle_component_input(*i)
 
     def handle_component_input(self, asking_for, results):
         if inspect.isclass(asking_for) and issubclass(asking_for, Component):
@@ -221,8 +234,8 @@ class BeamCalculator:
         self.components.append(component)
         self.solvable = calculate.calculate_support_reactions(self.group_components())
 
-    def remove_component(self, component):
-        self.components.remove(component)
+    def remove_component(self, ind):
+        del self.components[ind]
         self.solvable = calculate.calculate_support_reactions(self.group_components())
 
     def group_components(self):
@@ -238,4 +251,49 @@ class BeamCalculator:
                 dct["moments"].append(comp)
 
         return dct
+
+    def save_to_json(self):
+        dct = {"distloads": [], "supports": [], "forces": [], "moments": []}
+        for comp in self.components:
+            if isinstance(comp, Distload):
+                dct["distloads"].append((type(comp).__name__, comp.direction, comp.startx, comp.startmag, comp.endx, comp.endmag))
+            elif isinstance(comp, FixedSupport):
+                dct["supports"].append((type(comp).__name__, comp.side))
+            elif isinstance(comp, (PinnedSupport, RollerSupport)):
+                dct["supports"].append((type(comp).__name__, comp.x))
+            elif isinstance(comp, Force):
+                dct["forces"].append((type(comp).__name__, comp.x, comp.mag, comp.angle_in_degrees))
+            elif isinstance(comp, Moment):
+                dct["moments"].append((type(comp).__name__, comp.x, comp.mag))
+
+        file_name = simpledialog.askstring("Getting file name", "Please give file name")
+
+        if file_name:
+            with open(file_name + ".json", 'w') as json_file:
+                json.dump(dct, json_file)
+
+    def load_from_json(self):
+        file_name = filedialog.askopenfilename(filetypes=[("JSON files", ".json")])
+
+        with open(file_name) as json_file:
+            dct = json.load(json_file)
+
+
+            for subclass in dct:
+                for comp in dct[subclass]:
+                    class_name, inputs= comp[0], comp[1:]
+                    self.handle_component_input(globals()[class_name], inputs)
+
+    def handle_mouse_pressed(self, pos):
+        for i in range(len(self.components)):
+            if ui.point_in_rect(pos, (self.BOTTOM_DEMO_START_X + (self.BOTTOM_DEMO_START_X+DemoWithInfo.OUTLINE_WIDTH) * i, HEIGHT - 25, DemoWithInfo.OUTLINE_WIDTH, DemoWithInfo.OUTLINE_HEIGHT)):
+                self.remove_component(i)
+
+   
+
+
+
+
+
+
     

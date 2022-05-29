@@ -1,6 +1,5 @@
 from components.force import Force
-from components.support import Support, FixedSupport
-from components.distributed_load import Distload
+from components.support import FixedSupport, PinnedSupport, RollerSupport
 from components.moment import Moment
 
 import numpy as np
@@ -158,3 +157,18 @@ def plot_diagrams(components, beam_length):
     subplot[1].axhline(y=0, color='r', linestyle='--')
     plt.xlim([0,beam_length])
     plt.show()
+
+def check_indeterminate(components, beam_length):
+    unknowns = 0
+    sup_xs = []
+    for comp in components:
+        if isinstance(comp, (PinnedSupport, RollerSupport)):
+            unknowns += 1
+            sup_xs.append(comp.x)
+        elif isinstance(comp, FixedSupport):
+            unknowns += 2
+            sup_xs.append(comp.x)
+
+    segments = len(set(sup_xs + [0, beam_length])) - 1
+
+    return unknowns <= 2 * segments
