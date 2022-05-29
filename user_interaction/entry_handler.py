@@ -20,56 +20,66 @@ class EntryHandler:
         self.results = None
         self.asking_for = asking_for
         self.arrowimg = pygame.image.load("images/arrow.png")
+
+        if inspect.isclass(self.asking_for) and issubclass(self.asking_for, Component):
+            self.demo = self.asking_for.create_demo()
+            self.demo.setup_demo()
+
+        else:
+            self.demo = None
         
 
     def draw_prompts(self,win):
+        """Draw questions"""
         if self.ySpacing:
             for i,entry in enumerate(self.entries):
                 if i!=0:
-                    text_rect = pygame.Rect(self.x,self.y+i*(self.ySpacing+self.entries[i-1].height),entry.PromptWidth,entry.height)
+                    text_rect = pygame.Rect(self.x,self.y+i*(self.ySpacing+self.entries[i-1].height),entry.prompt_width,entry.height)
                 else:
-                    text_rect = pygame.Rect(self.x,self.y,entry.PromptWidth,entry.height)
+                    text_rect = pygame.Rect(self.x,self.y,entry.prompt_width,entry.height)
                 text_rect = ui.scale_rect(text_rect,0.95)
                 myfont = pygame.font.SysFont(entry.font,entry.fontsize)
-                text_sur = myfont.render(entry.PromptText,True,entry.PromptTextColor)
+                text_sur = myfont.render(entry.prompt_text,True,entry.prompt_text_color)
                 win.blit(text_sur,text_rect)
                 
-                if entry.Active:
+                if entry.active:
                     #pygame.draw.circle(win,(255,0,0),(text_rect.left-10,text_rect.centery),5)
-                    #DrawArrow(win,entry.PromptBackgroundColor,(text_rect.left-40,text_rect.centery),(text_rect.left-10,text_rect.centery),2)
+                    #DrawArrow(win,entry.prompt_background_color,(text_rect.left-40,text_rect.centery),(text_rect.left-10,text_rect.centery),2)
                     win.blit(self.arrowimg,(text_rect.left-60,text_rect.top-7))
 
     def draw_entries(self,win):
+        """Draw entries"""
         if self.ySpacing:
             for i,entry in enumerate(self.entries):
                 if i!=0:
-                    text_rect = pygame.Rect(self.x+entry.PromptWidth,self.y+i*(self.ySpacing+entry.height),entry.InputWidth,entry.height)
+                    text_rect = pygame.Rect(self.x+entry.prompt_width,self.y+i*(self.ySpacing+entry.height),entry.input_width,entry.height)
                 else:
-                    text_rect = pygame.Rect(self.x+entry.PromptWidth,self.y,entry.InputWidth,entry.height)
+                    text_rect = pygame.Rect(self.x+entry.prompt_width,self.y,entry.input_width,entry.height)
                 text_rect = ui.scale_rect(text_rect,0.95)
                 myfont = pygame.font.SysFont(entry.font,entry.fontsize)
-                text_sur = myfont.render(entry.InputText,True,entry.InputTextColor)
+                text_sur = myfont.render(entry.input_text,True,entry.input_text_color)
                 win.blit(text_sur,text_rect)
 
 
     def draw_background(self,win):
+        """Draw background"""
         if self.ySpacing:
             for i,entry in enumerate(self.entries):
                 if i!=0:
-                    PromptBg = pygame.Rect(self.x,self.y+i*(self.ySpacing+self.entries[i-1].height),entry.PromptWidth,entry.height)
+                    PromptBg = pygame.Rect(self.x,self.y+i*(self.ySpacing+self.entries[i-1].height),entry.prompt_width,entry.height)
                 else:
-                    PromptBg = pygame.Rect(self.x,self.y,entry.PromptWidth,entry.height)
+                    PromptBg = pygame.Rect(self.x,self.y,entry.prompt_width,entry.height)
                 if i!=0:
-                    InputBg = pygame.Rect(self.x+entry.PromptWidth,self.y+i*(self.ySpacing+entry.height),entry.InputWidth,entry.height)
+                    InputBg = pygame.Rect(self.x+entry.prompt_width,self.y+i*(self.ySpacing+entry.height),entry.input_width,entry.height)
                 else:
-                    InputBg = pygame.Rect(self.x+entry.PromptWidth,self.y,entry.InputWidth,entry.height)
-                pygame.draw.rect(win,entry.PromptBackgroundColor,PromptBg)
-                pygame.draw.rect(win,entry.InputBackgroundColor,InputBg)
+                    InputBg = pygame.Rect(self.x+entry.prompt_width,self.y,entry.input_width,entry.height)
+                pygame.draw.rect(win,entry.prompt_background_color,PromptBg)
+                pygame.draw.rect(win,entry.input_background_color,InputBg)
 
     def draw_demo_for_component(self,win):
-        if inspect.isclass(self.asking_for) and issubclass(self.asking_for, Component):
-            demo = self.asking_for.create_demo()
-            demo.draw_demo_shape(win, self.DEMO_RECT.topleft)
+        """Draw demo if a component is getting constructed"""
+        if self.demo:
+            self.demo.draw_demo_shape(win, self.DEMO_RECT.topleft)
 
 
     def draw(self,win):
@@ -97,25 +107,27 @@ class EntryHandler:
             else:
                 self.activate_next_entry() 
         elif key == pygame.K_ESCAPE:
-            self.deavtive_all_entries()
+            self.deactive_all_entries()
         else:
             self.type_to_active_field(event)
 
     def activate_entry(self,index):
+        """Activate an entry at the specific index"""
         for ind, entry in enumerate(self.entries):
             if ind == index:
-                entry.Activate()
+                entry.activate()
             else:
-                entry.Deactivate()
+                entry.deactivate()
 
-    def deavtive_all_entries(self):
+    def deactive_all_entries(self):
         for entry in self.entries:
-            entry.Deactivate()
+            entry.deactivate()
 
     def activate_next_entry(self):
+        """Activate the entry at the next index"""
         n = len(self.entries)
         for ind, entry in enumerate(self.entries):
-            if entry.Active:
+            if entry.active:
                 if ind == n-1:
                     self.activate_entry(0)
                     break
@@ -124,15 +136,17 @@ class EntryHandler:
                     break
 
     def no_active_entry(self):
+        """Return true if no entry is active"""
         for _, entry in enumerate(self.entries):
-            if entry.Active:
+            if entry.active:
                 return False
         return True  
 
     def activate_previous_one(self):
+        """Activate the entry at the previous index"""
         n = len(self.entries)
         for ind, entry in enumerate(self.entries):
-            if entry.Active:
+            if entry.active:
                 if ind == 0:
                     self.activate_entry(n-1)
                     break
@@ -141,13 +155,14 @@ class EntryHandler:
                     break
     
     def handle_mouse_hover(self,pos):
+        """Change mouse cursor if it is at the correct location"""
         for i,entry in enumerate(self.entries):
             if i!=0:
-                promptrect = pygame.Rect(self.x,self.y+i*(self.ySpacing+self.entries[i-1].height),entry.PromptWidth,entry.height)
-                inputrect = pygame.Rect(self.x+entry.PromptWidth,self.y+i*(self.ySpacing+entry.height),entry.InputWidth,entry.height)
+                promptrect = pygame.Rect(self.x,self.y+i*(self.ySpacing+self.entries[i-1].height),entry.prompt_width,entry.height)
+                inputrect = pygame.Rect(self.x+entry.prompt_width,self.y+i*(self.ySpacing+entry.height),entry.input_width,entry.height)
             else:
-                promptrect = pygame.Rect(self.x,self.y,entry.PromptWidth,entry.height)
-                inputrect = pygame.Rect(self.x+entry.PromptWidth,self.y,entry.InputWidth,entry.height)
+                promptrect = pygame.Rect(self.x,self.y,entry.prompt_width,entry.height)
+                inputrect = pygame.Rect(self.x+entry.prompt_width,self.y,entry.input_width,entry.height)
 
             if promptrect.x<=pos[0] and promptrect.x+promptrect.width>=pos[0]:
                 if promptrect.y<=pos[1] and promptrect.y+promptrect.height>=pos[1]:
@@ -179,6 +194,7 @@ class EntryHandler:
             pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
 
     def handle_mouse_down(self,pos):
+        """Activate an entry if it is pressed"""
         for i,entry in enumerate(self.entries):
             if entry.hoveringprompt:
                 self.activate_entry(i)
@@ -188,35 +204,38 @@ class EntryHandler:
                 break
 
     def get_active_index(self):
+        """Get the index of active index"""
         for i,entry in enumerate(self.entries):
-            if entry.Active:
+            if entry.active:
                 return i
         return None
 
     def type_to_active_field(self,event):
+        """Type to the active field"""
         ind = self.get_active_index()
         if isinstance(ind, int):
             if event.key == pygame.K_BACKSPACE:
-                self.entries[ind].InputText = self.entries[ind].InputText[:-1]
+                self.entries[ind].input_text = self.entries[ind].input_text[:-1]
             if self.entries[ind].getLetter:
                 if event.unicode.isalpha():
-                    if len(self.entries[ind].InputText)<=10:
-                        self.entries[ind].InputText += event.unicode
+                    if len(self.entries[ind].input_text)<=10:
+                        self.entries[ind].input_text += event.unicode
             elif self.entries[ind].getLetter == False:
                 try:
                     int(event.unicode) 
-                    if len(self.entries[ind].InputText)<=10:
-                        self.entries[ind].InputText += event.unicode
+                    if len(self.entries[ind].input_text)<=10:
+                        self.entries[ind].input_text += event.unicode
                 except:
                     pass
                 if str(event.unicode) == "." or str(event.unicode) == "-":
-                   if len(self.entries[ind].InputText)<=10:
-                        self.entries[ind].InputText += event.unicode 
+                   if len(self.entries[ind].input_text)<=10:
+                        self.entries[ind].input_text += event.unicode 
             
     def return_results(self):
+        """Show that the entries are complete"""
         self.results = []
         for i,entry in enumerate(self.entries):
-            self.results.append(entry.InputText)
+            self.results.append(entry.input_text)
         self.inputs_are_complete = True
         pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
 

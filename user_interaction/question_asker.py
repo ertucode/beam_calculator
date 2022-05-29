@@ -6,6 +6,7 @@ from components.moment import Moment
 
 
 class QuestionAsker:
+    """Class to check for button presses that returns a component class"""
     def __init__(self,):
         self.button_map = {  pygame.K_F1: FixedSupport
                             ,pygame.K_F2: PinnedSupport

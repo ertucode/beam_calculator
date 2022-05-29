@@ -1,9 +1,9 @@
 from components import * 
 from variables import BEAM_LEFT, BEAM_RIGHT, BEAM_BOTTOM, BEAM_TOP
-    
-SUPPORT_SIZE = 35
+
 
 def draw_circles(win,COLOR,x,y,width,radius,th):
+    """Draw circles along the width"""
     count = math.floor(width / radius /2)
     center1x = x + radius
     center1y = y + radius
@@ -11,6 +11,9 @@ def draw_circles(win,COLOR,x,y,width,radius,th):
         pygame.draw.circle(win,COLOR,(center1x+i*2.15*radius,center1y),radius,th)
 
 class Support(Component):
+    # Constants for support 
+    TIRTIK_HEIGHT = 5
+    TIRTIK_COUNT = 6
     @staticmethod
     def draw_tırtık(win,COLOR,side,x,y,width,height,count,th):
         if side=="down":
@@ -35,9 +38,10 @@ class Support(Component):
                 pygame.draw.line(win,COLOR,(firstx1,firsty1+offset),(firstx2,firsty2+offset),th)
 
 class FixedSupport(Support):
+    # Width and height of a fixed support
     DRAW_WIDTH = 10
     DRAW_HEIGHT = 100
-
+    # Questions to ask to be able to construct 
     CONSTRUCT_QUESTIONS = ("Location[left/right]: ",)
     def __init__(self,side,beam_length):
         self.side = side
@@ -48,13 +52,14 @@ class FixedSupport(Support):
         self.reaction_moment = "Not Calculated"
     
     def setup_demo(self):
+        """Setting up a demo surface"""
         draw_width = self.DRAW_WIDTH * 0.5
         draw_height = self.DRAW_HEIGHT * 0.5
 
         self.demo_surface = pygame.Surface.copy(DemoWithInfo.DEMO_SURFACE)
         rect = self.demo_surface.get_rect()
         FixedSupport.draw_fixed_sup(self.demo_surface, "black", rect.centerx, rect.centery - DemoWithInfo.OUTLINE_HEIGHT * 0.25 - 30, self.side, draw_width, draw_height, 2)   
-        print_demo_data(self.demo_surface, ("Fixed", f"{self.side}"), rect, DemoWithInfo.OUTLINE_WIDTH, DemoWithInfo.OUTLINE_HEIGHT)
+        self.print_demo_data(("Fixed", f"{self.side}"), rect)
 
     def set_location_according_to_beam_length(self,beam_length):
         if self.side == "left":
@@ -97,6 +102,8 @@ class FixedSupport(Support):
         return cls("left", 10)
 
 class PointSupport(Support):
+    SIZE = 35
+    # Questions to ask to be able to construct 
     CONSTRUCT_QUESTIONS = ("Location[m]: ",)
     def __init__(self, x):
         self.x = x
@@ -121,25 +128,25 @@ class PinnedSupport(PointSupport):
         self.set_location_according_to_beam_length(beam_length)
     
     def setup_demo(self):
-
+        """Setting up a demo surface"""
         self.demo_surface = pygame.Surface.copy(DemoWithInfo.DEMO_SURFACE)
         rect = self.demo_surface.get_rect()
         
-        x, y, width, height = rect.centerx, rect.top + SUPPORT_SIZE - 20, SUPPORT_SIZE, SUPPORT_SIZE
+        x, y, width, height = rect.centerx, rect.top + self.SIZE - 20, self.SIZE, self.SIZE
         points = ((x,y),(x - width /2,y + height),(x + width /2,y + height))
         pygame.draw.lines(self.demo_surface, "black", True, points, 2)
-        self.draw_tırtık(self.demo_surface,"black","down",*points[1],SUPPORT_SIZE,TIRTIK_HEIGHT,TIRTIK_COUNT,2)
-        print_demo_data(self.demo_surface, ("Pinned", f"{self.x} m"), rect, DemoWithInfo.OUTLINE_WIDTH, DemoWithInfo.OUTLINE_HEIGHT)
+        self.draw_tırtık(self.demo_surface,"black","down",*points[1],self.SIZE,self.TIRTIK_HEIGHT,self.TIRTIK_COUNT,2)
+        self.print_demo_data(("Pinned", f"{self.x} m"), rect)
 
 
     def set_location_according_to_beam_length(self, beam_length):
         self.mappedx = map_value(self.x,0,beam_length,BEAM_LEFT,BEAM_RIGHT)
-        x, y, width, height = self.mappedx, BEAM_BOTTOM, SUPPORT_SIZE, SUPPORT_SIZE
+        x, y, width, height = self.mappedx, BEAM_BOTTOM, self.SIZE, self.SIZE
         self.points = ((x,y),(x - width /2,y + height),(x + width /2,y + height))
 
     def draw(self, win):
         super().draw(win)
-        self.draw_tırtık(win,"black","down",*self.points[1],SUPPORT_SIZE,TIRTIK_HEIGHT,TIRTIK_COUNT,2)
+        self.draw_tırtık(win,"black","down",*self.points[1],self.SIZE,self.TIRTIK_HEIGHT,self.TIRTIK_COUNT,2)
 
     def __repr__(self):
         return f"|Support Type: pinned, Location: {self.x}, Reaction Force: {self.reaction_force}|"
@@ -153,31 +160,32 @@ class RollerSupport(PointSupport):
         self.set_location_according_to_beam_length(beam_length)
     
     def setup_demo(self):
+        """Setting up a demo surface"""
         self.demo_surface = pygame.Surface.copy(DemoWithInfo.DEMO_SURFACE)
         rect = self.demo_surface.get_rect()
         
-        x, y, width, height = rect.centerx, rect.top + SUPPORT_SIZE - 20, SUPPORT_SIZE, SUPPORT_SIZE * 0.8
-        radius = 0.1 * SUPPORT_SIZE
+        x, y, width, height = rect.centerx, rect.top + self.SIZE - 20, self.SIZE, self.SIZE * 0.8
+        radius = 0.1 * self.SIZE
         points = ((x,y),(x - width /2,y + height),(x + width /2,y + height))
         tırtık_locy = y+height+1.9*radius
         pygame.draw.lines(self.demo_surface, "black", True, points, 2)
-        draw_circles(self.demo_surface,"black",*points[1],SUPPORT_SIZE,radius,2)
-        self.draw_tırtık(self.demo_surface,"black","down",points[1][0],tırtık_locy,SUPPORT_SIZE,TIRTIK_HEIGHT,TIRTIK_COUNT,2)
-        print_demo_data(self.demo_surface, ("Roller", f"{self.x} m"), rect, DemoWithInfo.OUTLINE_WIDTH, DemoWithInfo.OUTLINE_HEIGHT)     
+        draw_circles(self.demo_surface,"black",*points[1],self.SIZE,radius,2)
+        self.draw_tırtık(self.demo_surface,"black","down",points[1][0],tırtık_locy,self.SIZE,self.TIRTIK_HEIGHT,self.TIRTIK_COUNT,2)
+        self.print_demo_data(("Roller", f"{self.x} m"), rect)     
     
     def set_location_according_to_beam_length(self, beam_length):
         self.mappedx = map_value(self.x,0,beam_length,BEAM_LEFT,BEAM_RIGHT)
 
         # Setting up draw variables
-        x, y, width, height = self.mappedx, BEAM_BOTTOM, SUPPORT_SIZE, SUPPORT_SIZE * 0.8
-        self.radius = 0.1 * SUPPORT_SIZE
+        x, y, width, height = self.mappedx, BEAM_BOTTOM, self.SIZE, self.SIZE * 0.8
+        self.radius = 0.1 * self.SIZE
         self.points = ((x,y),(x - width /2,y + height),(x + width /2,y + height))
         self.tırtık_locy = y+height+1.9*self.radius
 
     def draw(self, win):
         super().draw(win)
-        draw_circles(win,"black",*self.points[1],SUPPORT_SIZE,self.radius,2)
-        self.draw_tırtık(win,"black","down",self.points[1][0],self.tırtık_locy,SUPPORT_SIZE,TIRTIK_HEIGHT,TIRTIK_COUNT,2)
+        draw_circles(win,"black",*self.points[1],self.SIZE,self.radius,2)
+        self.draw_tırtık(win,"black","down",self.points[1][0],self.tırtık_locy,self.SIZE,self.TIRTIK_HEIGHT,self.TIRTIK_COUNT,2)
 
     def __repr__(self):
         return f"|Support Type: roller, Location: {self.x}, Reaction Force: {self.reaction_force}|"

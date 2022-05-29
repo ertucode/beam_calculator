@@ -6,6 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 def calculate_support_reactions(components):
+    """Calculate support reactions"""
     times = []
     fy = 0
     distcount = 0
@@ -81,6 +82,7 @@ def calculate_support_reactions(components):
 def plot_diagrams(components, beam_length):
     """
     Calculate support reactions incrementing with inc,
+    Use a dummy fixed support at the right side to save the moments and shears,
     and plot the moment and shear diagrams
     """
     inc = 0.005

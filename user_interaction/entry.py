@@ -1,32 +1,32 @@
 
 
 class Entry:
-    def __init__(self,height,font="berlinsansfbdemikalın",fontsize=12,Prompt = None,Input = None,Active = False,getLetter=False,component_type=None):
+    def __init__(self,height,font="berlinsansfbdemikalın",fontsize=12,prompt = None,inp = None,active = False,getLetter=False,component_type=None):
         self.height = height
         self.font = font
         self.fontsize = fontsize
-        self.Active = Active
-        self.getLetter = getLetter
+        self.active = active
+        self.getLetter = getLetter  # Entry field that will only accept letter
         
         self.hoveringprompt = False
         self.hoveringinput = False
         self.component_type = component_type
 
-        if Prompt != None:
-            self.PromptText = Prompt[0]
-            self.PromptWidth = Prompt[1]
-            self.PromptTextColor = Prompt[2]
-            self.PromptBackgroundColor = Prompt[3]
+        if prompt != None:  # Question part variables
+            self.prompt_text = prompt[0]
+            self.prompt_width = prompt[1]
+            self.prompt_text_color = prompt[2]
+            self.prompt_background_color = prompt[3]
 
-        if Input != None:
-            self.InputText = Input[0]
-            self.InputWidth = Input[1]
-            self.InputTextColor = Input[2]
-            self.InputBackgroundColor = Input[3]    
+        if inp != None:   # Input part variables
+            self.input_text = inp[0]
+            self.input_width = inp[1]
+            self.input_text_color = inp[2]
+            self.input_background_color = inp[3]    
 
-    def Activate(self):
-        self.Active = True
+    def activate(self):
+        self.active = True
 
-    def Deactivate(self):
-        self.Active = False
+    def deactivate(self):
+        self.active = False
   

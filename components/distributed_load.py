@@ -20,9 +20,10 @@ def draw_dist_load(win,COLOR,x,y,width,height,dir,startmag,endmag,maxmag):
 
 
 class Distload(Component):
-    HEIGHT = 50
-
+    HEIGHT = 50 # Max height in the screen
+    # Questions to ask to be able to construct 
     CONSTRUCT_QUESTIONS = ("Direction[up/down]:","Starting Location[m]: ","Starting Magnitude[N/m]: ","Ending Location[m]: ","Ending Magnitude[N/m]: ")
+
     def __init__(self,startx,endx,startmag,endmag,direction,beam_length):
         self.x = self.startx = startx
         self.endx = endx
@@ -37,6 +38,7 @@ class Distload(Component):
         self.direction = direction
     
     def setup_demo(self):
+        """Setting up a demo surface"""
         self.demo_surface = pygame.Surface.copy(DemoWithInfo.DEMO_SURFACE)
         rect = self.demo_surface.get_rect()
         XOFF = 10
@@ -47,8 +49,8 @@ class Distload(Component):
         startx = rect.left + XOFF
         width = rect.right - 2 * XOFF
         draw_dist_load(self.demo_surface,"black",startx,y,width,self.HEIGHT * 0.5,self.direction,self.startmag,self.endmag,self.maxmag)
-        print_demo_data(self.demo_surface, ("Distributed L.", f"Dir = {self.direction}",f"x_i = {self.startx}",f"x_f = {self.endx}",f"Mag_i = {self.startmag}",f"Mag_f = {self.endmag}"),
-                 rect, DemoWithInfo.OUTLINE_WIDTH, DemoWithInfo.OUTLINE_HEIGHT)
+        self.print_demo_data(("Distributed L.", f"Dir = {self.direction}",f"x_i = {self.startx}",f"x_f = {self.endx}",f"Mag_i = {self.startmag}",f"Mag_f = {self.endmag}"),
+                 rect)
 
 
     def set_location_according_to_beam_length(self,beam_length):
@@ -60,6 +62,7 @@ class Distload(Component):
         draw_dist_load(win,"black",self.mappedstartx,BEAM_TOP,self.width,self.HEIGHT,self.direction,self.startmag,self.endmag,self.maxmag)
     
     def calculate_equivalent_quantities(self):
+        """Calculate equivalent force and location to use while calculating support reactions"""
         width = self.endx-self.startx
         if self.startmag >= self.endmag:
             MaxLoad = self.startmag

@@ -5,12 +5,14 @@ from variables import WIDTH, HEIGHT
 mainfont = "berlinsansfbdemikalın"
 
 def print_text(win,x,y,text,font="berlinsansfbdemikalın",fontsize=15,color=(0,0,0)):
+    """Print text from topleft"""
     pos = (x,y)
     myfont = pygame.font.SysFont(font,fontsize)
     text_sur = myfont.render(text,True,color)
     win.blit(text_sur,pos)
 
 def print_text_at_center(win,text_rect,text,font="berlinsansfbdemikalın",fontsize=15,color=(0,0,0)):
+    """Print text at the given center coordinates"""
     xc = text_rect[0] + text_rect[2]/2
     yc = text_rect[1] + text_rect[3]/2
     myfont = pygame.font.SysFont(font,fontsize)
@@ -19,11 +21,13 @@ def print_text_at_center(win,text_rect,text,font="berlinsansfbdemikalın",fontsi
     win.blit(text_sur,text_rect)
 
 def draw_rect_at_center(win,COLOR,center_x,center_y,width,height,th):
+    """Draw rectangle at the given center coordinates"""
     x = center_x - width/2
     y = center_y - height/2
     pygame.draw.rect(win,COLOR,(x,y,width,height),th)
 
 def draw_dashed_line(surf, color, start_pos, end_pos, width=1, dash_length=10):
+    """Draw a dashed line from start to end with given individual line length"""
     x1, y1 = start_pos
     x2, y2 = end_pos
     dl = dash_length
@@ -53,6 +57,7 @@ def draw_dashed_line(surf, color, start_pos, end_pos, width=1, dash_length=10):
         pygame.draw.line(surf, color, start, end, width)
 
 def draw_dashed_outline(win,outlinecolor,orect):
+    """Draw a dashed outline to the given rect"""
     draw_dashed_line(win,outlinecolor,orect.topright,orect.topleft,2)
     draw_dashed_line(win,outlinecolor,orect.bottomleft,orect.bottomright,2)
     draw_dashed_line(win,outlinecolor,orect.topleft,orect.bottomleft,2)
@@ -67,6 +72,7 @@ def display_message(win, message, text_rect):
     time.sleep(0.3)
 
 def scale_rect(rect,scale_factor):
+    """Scale a rectangle without changing its center"""
     center = rect.center
     rect.w = rect.w*scale_factor
     rect.h = rect.h*scale_factor
@@ -74,4 +80,5 @@ def scale_rect(rect,scale_factor):
     return rect
 
 def point_in_rect(point, rect):
+    """Check if a point is in a rectangle"""
     return rect[0] <= point[0] <= rect[0] + rect[2] and rect[1] <= point[1] <= rect[1] + rect[3]
