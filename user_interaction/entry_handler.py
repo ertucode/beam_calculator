@@ -163,20 +163,17 @@ class EntryHandler:
         self.change_cursor()
 
     def change_cursor(self):
+        hovering_some_prompt, hovering_some_input = False, False
         for i,entry in enumerate(self.entries):
             if entry.hoveringprompt:
-                HoveringSomePrompt = True
+                hovering_some_prompt = True
                 break
-            else: 
-                HoveringSomePrompt = False
             if entry.hoveringinput:
-                HoveringSomeInput = True
+                hovering_some_input = True
                 break
-            else: 
-                HoveringSomeInput = False
-        if HoveringSomePrompt:
+        if hovering_some_prompt:
             pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_HAND)
-        elif HoveringSomeInput:
+        elif hovering_some_input:
             pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_IBEAM)
         else:
             pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)

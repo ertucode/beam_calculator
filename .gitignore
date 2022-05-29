@@ -1,3 +1,4 @@
 try.py
 old_beam_calculator.py
 *.json
+!samples/*.json
