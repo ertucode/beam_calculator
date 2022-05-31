@@ -32,7 +32,7 @@ class Moment(Component):
     
     def setup_demo(self):
         """Setting up a demo surface"""
-        self.demo_surface = pygame.Surface.copy(DemoWithInfo.DEMO_SURFACE)
+        self.demo_surface = pygame.Surface.copy(demo_with_info.surface)
         rect = self.demo_surface.get_rect()
         
         draw_moment(self.demo_surface,"black",rect.centerx,rect.top + self.SIZE,self.SIZE,self.direction,2)

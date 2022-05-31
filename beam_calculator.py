@@ -10,7 +10,7 @@ from user_interaction.entry import Entry
 from user_interaction.entry_handler import EntryHandler
 
 
-from components import Component, DemoWithInfo
+from components import Component, demo_with_info
 from components.force import Force
 from components.support import FixedSupport, PinnedSupport, RollerSupport, Support
 from components.distributed_load import Distload
@@ -94,7 +94,7 @@ class BeamCalculator:
 
             for i, obj in enumerate(self.components):
                 obj.draw(self.win)
-                obj.draw_shape_and_info(self.win, (self.BOTTOM_DEMO_START_X + (self.BOTTOM_DEMO_START_X+DemoWithInfo.OUTLINE_WIDTH) * i, HEIGHT - 25))
+                obj.draw_shape_and_info(self.win, (self.BOTTOM_DEMO_START_X + (self.BOTTOM_DEMO_START_X+demo_with_info.width) * i, HEIGHT - 25))
 
         # If the system is not solvable, warn user
         if not self.solvable:
@@ -342,7 +342,7 @@ class BeamCalculator:
     def handle_mouse_pressed(self, pos, button):
         """Handle when mouse is pressed at the bottom demos"""
         for i in range(len(self.components)):
-            if ui.point_in_rect(pos, (self.BOTTOM_DEMO_START_X + (self.BOTTOM_DEMO_START_X+DemoWithInfo.OUTLINE_WIDTH) * i, HEIGHT - 25, DemoWithInfo.OUTLINE_WIDTH, DemoWithInfo.OUTLINE_HEIGHT)):
+            if ui.point_in_rect(pos, (self.BOTTOM_DEMO_START_X + (self.BOTTOM_DEMO_START_X+demo_with_info.width) * i, HEIGHT - 25, demo_with_info.width, demo_with_info.height)):
                 if button == 1:
                     self.remove_component(i)
                 elif button == 3:

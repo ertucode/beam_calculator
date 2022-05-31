@@ -3,26 +3,24 @@ import math
 from variables import HEIGHT, FULLHEIGHT
 import ui
 
-def init_demo(width, height):
-    """Initialize demo surfaces with dashed outlines"""
-    OUTLINE_COLOR = (220,220,255)
-    DEMO_SURFACE = pygame.Surface((width + 5, height + 5))
-    DEMO_SURFACE.fill("white")
-    ui.draw_dashed_outline(DEMO_SURFACE, OUTLINE_COLOR, pygame.Rect(0, 0, width, height))
-    return DEMO_SURFACE
+class ShapeDemo:
+    """Demo surface for just showing the shape"""
+    def __init__(self, width, height):
+        self.width = width
+        self.height = height
+        
+        self.surface = pygame.Surface((width + 5, height + 5))
+        self.surface.fill("white")
+        ui.draw_dashed_outline(self.surface, (220,220,255), pygame.Rect(0, 0, width, height))
 
-class DemoWithInfo:
-    """Demo for bottom side with component info given"""
-    TEXT_YOFFSET = 15
-    OUTLINE_WIDTH = 100
-    OUTLINE_HEIGHT = FULLHEIGHT - HEIGHT + 10
-    DEMO_SURFACE = init_demo(OUTLINE_WIDTH, OUTLINE_HEIGHT)
+class ShapeDemoWithInfo(ShapeDemo):
+    """Demo surface for showing the shape and the info"""
+    def __init__(self, width, height, text_offset):
+        super().__init__(width, height)
+        self.text_offset = text_offset
 
-class DemoForShape:
-    """Demo for only the shape"""
-    OUTLINE_WIDTH = 100
-    OUTLINE_HEIGHT = 116
-    DEMO_SURFACE = init_demo(OUTLINE_WIDTH, OUTLINE_HEIGHT)
+demo_for_shape = ShapeDemo(100, 116)
+demo_with_info = ShapeDemoWithInfo(100, FULLHEIGHT - HEIGHT + 10, 15)
 
 class Component:
     """Common functions for the components"""
@@ -30,13 +28,13 @@ class Component:
         surface.blit(self.demo_surface, point)  
 
     def draw_demo_shape(self, surface, point):
-        demo_surface = pygame.Surface.copy(DemoForShape.DEMO_SURFACE)
-        demo_surface.blit(self.demo_surface, (0,0), (0, 0, DemoWithInfo.OUTLINE_WIDTH, DemoForShape.OUTLINE_HEIGHT - 5))
+        demo_surface = pygame.Surface.copy(demo_for_shape.surface)
+        demo_surface.blit(self.demo_surface, (0,0), (0, 0, demo_for_shape.width, demo_for_shape.height - 5))
         surface.blit(demo_surface, point)
 
     def print_demo_data(self, datas, rect):
         for ind,data in enumerate(datas):
-            text_rect = rect.x,rect.y+ind*DemoWithInfo.TEXT_YOFFSET,DemoWithInfo.OUTLINE_WIDTH,DemoWithInfo.OUTLINE_HEIGHT
+            text_rect = rect.x,rect.y+ind*demo_with_info.text_offset,demo_with_info.width, demo_with_info.height
             ui.print_text_at_center(self.demo_surface,text_rect,data,font="javanesetext",fontsize=14)
 
 

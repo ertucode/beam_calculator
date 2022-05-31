@@ -56,9 +56,9 @@ class FixedSupport(Support):
         draw_width = self.DRAW_WIDTH * 0.5
         draw_height = self.DRAW_HEIGHT * 0.5
 
-        self.demo_surface = pygame.Surface.copy(DemoWithInfo.DEMO_SURFACE)
+        self.demo_surface = pygame.Surface.copy(demo_with_info.surface)
         rect = self.demo_surface.get_rect()
-        FixedSupport.draw_fixed_sup(self.demo_surface, "black", rect.centerx, rect.centery - DemoWithInfo.OUTLINE_HEIGHT * 0.25 - 30, self.side, draw_width, draw_height, 2)   
+        FixedSupport.draw_fixed_sup(self.demo_surface, "black", rect.centerx, rect.centery - demo_with_info.height * 0.25 - 30, self.side, draw_width, draw_height, 2)   
         self.print_demo_data(("Fixed", f"{self.side}"), rect)
 
     def set_location_according_to_beam_length(self,beam_length):
@@ -129,7 +129,7 @@ class PinnedSupport(PointSupport):
     
     def setup_demo(self):
         """Setting up a demo surface"""
-        self.demo_surface = pygame.Surface.copy(DemoWithInfo.DEMO_SURFACE)
+        self.demo_surface = pygame.Surface.copy(demo_with_info.surface)
         rect = self.demo_surface.get_rect()
         
         x, y, width, height = rect.centerx, rect.top + self.SIZE - 20, self.SIZE, self.SIZE
@@ -161,7 +161,7 @@ class RollerSupport(PointSupport):
     
     def setup_demo(self):
         """Setting up a demo surface"""
-        self.demo_surface = pygame.Surface.copy(DemoWithInfo.DEMO_SURFACE)
+        self.demo_surface = pygame.Surface.copy(demo_with_info.surface)
         rect = self.demo_surface.get_rect()
         
         x, y, width, height = rect.centerx, rect.top + self.SIZE - 20, self.SIZE, self.SIZE * 0.8

@@ -18,7 +18,7 @@ class Force(Component):
     
     def setup_demo(self):
         """Setting up a demo surface"""
-        self.demo_surface = pygame.Surface.copy(DemoWithInfo.DEMO_SURFACE)
+        self.demo_surface = pygame.Surface.copy(demo_with_info.surface)
         rect = self.demo_surface.get_rect()
         desy = rect.top + 40
         length = self.SHOW_LEN * 0.5
